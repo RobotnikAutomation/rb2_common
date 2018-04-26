@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="version" default="rb2_std.urdf.xacro" />
+  <arg name="prefix" default="rb2_"/>
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find rb2_description)/robots/$(arg version)' prefix:=$(arg prefix)" />
+
+  <!-- publish tfs through the robot_state_publisher -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+
+</launch>
+
