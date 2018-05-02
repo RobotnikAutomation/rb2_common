@@ -11,14 +11,14 @@
 	<!-- hq: selects model in high quality (.dae) -->
 
 	<!-- ELEVATOR PLATFORM -->
-	<joint name="${prefix}_elevator_joint" type="prismatic">
+	<joint name="${prefix}_platform_joint" type="prismatic">
 			<origin xyz="0.0 0.0 0.285" rpy="0 0 0 " />
 			<parent link="${parent}"/>
-			<child link="${prefix}_elevator_link" />
+			<child link="${prefix}_platform_link" />
 			<axis xyz="0 0 1"/>
-			<limit effort="1.0" lower="0.0" upper="0.06" velocity="0.5"/>
+			<limit effort="1.0" lower="0.0" upper="0.05" velocity="0.5"/>
 	</joint> 
-	<link name="${prefix}_elevator_link">
+	<link name="${prefix}_platform_link">
 		<visual>
 			<origin xyz="0 0 0" rpy="0 0 0" />
 			<xacro:if value="${hq}">

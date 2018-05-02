@@ -39,7 +39,7 @@ robotnik_base_control:
 
   set_digital_output_service_hw: robotnik_base_hw/set_digital_output
   has_elevator: true
-  elevator_position_up: 0.03 # linear height (m)
+  elevator_position_up: 0.05 # linear height (m)
   elevator_position_down: 0.0
   elevator_digital_output_up: 5
   elevator_digital_output_down: 6 
