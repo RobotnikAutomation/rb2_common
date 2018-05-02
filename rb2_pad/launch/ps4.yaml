@@ -15,12 +15,6 @@ button_output_1: 2
 button_output_2: 0
 output_1: 10 
 output_2: 11
-button_ptz_tilt_up: 7
-button_ptz_tilt_down: 7
-button_ptz_pan_right: 6
-button_ptz_pan_left: 6
-button_ptz_zoom_wide: 9 
-button_ptz_zoom_tele: 8
 button_home: 6
 tilt_increment: 5
 pan_increment: 5

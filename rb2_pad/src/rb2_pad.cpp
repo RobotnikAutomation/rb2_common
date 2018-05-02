@@ -35,14 +35,12 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
 #include <geometry_msgs/Twist.h>
-#include <robotnik_msgs/ptz.h>
 // Not yet catkinized 9/2013
 // #include <sound_play/sound_play.h>
 #include <unistd.h>
 #include <robotnik_msgs/set_mode.h>
 #include <rb2_pad/enable_disable_pad.h>
 #include <robotnik_msgs/set_digital_output.h>
-#include <robotnik_msgs/ptz.h>
 #include <robotnik_msgs/home.h>
 #include <diagnostic_updater/diagnostic_updater.h>
 #include <diagnostic_updater/publisher.h>
@@ -88,8 +86,8 @@ class RB2Pad
 	int manual_release_true_number_, manual_release_false_number_, bumper_override_false_number_, bumper_override_true_number_;
 	int linear_x_, linear_y_, linear_z_, angular_;
 	double l_scale_, a_scale_, l_scale_z_; 
-	//! It will publish into command velocity (for the robot) and the ptz_state (for the pantilt)
-	ros::Publisher vel_pub_, ptz_pub_;
+	//! It will publish into command velocity (for the robot)
+	ros::Publisher vel_pub_;
 	//! It will be suscribed to the joystick
 	ros::Subscriber pad_sub_;
 	//! Name of the topic where it will be publishing the velocity
@@ -98,8 +96,6 @@ class RB2Pad
 	std::string cmd_service_io_;
 	//! Name of the service where to actuate the elevator
 	std::string elevator_service_name_;
-	//! Name of the topic where it will be publishing the pant-tilt values	
-	std::string cmd_topic_ptz_;
 	//! If it is True, it will check the timeout message
 	bool check_message_timeout_;
 	double current_vel;
@@ -125,8 +121,6 @@ class RB2Pad
 	ros::ServiceClient doHome;
 	//! Name of the service to do the homing
 	std::string cmd_home_;
-	//! buttons to the pan-tilt-zoom camera
-	int ptz_tilt_up_, ptz_tilt_down_, ptz_pan_right_, ptz_pan_left_;
 	//! Enables/disables the pad
 	// ros::ServiceServer enable_disable_srv_;
 
@@ -155,8 +149,6 @@ class RB2Pad
 	// bool bEnable;
     //! Client of the sound play service
     //  sound_play::SoundClient sc;
-	//! Pan & tilt increment (degrees)
-	int pan_increment_, tilt_increment_;
 };
 
 
@@ -191,14 +183,7 @@ RB2Pad::RB2Pad():
 	nh_.param("output_1", output_1_, output_1_);
 	nh_.param("output_2", output_2_, output_2_);
     // PANTILT CONF
-	nh_.param("cmd_topic_ptz", cmd_topic_ptz_, cmd_topic_ptz_);
-	nh_.param("button_ptz_tilt_up", ptz_tilt_up_, ptz_tilt_up_);
-	nh_.param("button_ptz_tilt_down", ptz_tilt_down_, ptz_tilt_down_);
-	nh_.param("button_ptz_pan_right", ptz_pan_right_, ptz_pan_right_);
-	nh_.param("button_ptz_pan_left", ptz_pan_left_, ptz_pan_left_);
     nh_.param("button_home", button_home_, button_home_);
-	nh_.param("pan_increment", pan_increment_, 1);
-	nh_.param("tilt_increment",tilt_increment_, 1);
 	nh_.param("button_lower_elevator",button_lower_elevator_, 6);
 	nh_.param("button_raise_elevator",button_raise_elevator_, 4);
 	nh_.param("button_stop_elevator",button_stop_elevator_, 16);
@@ -219,8 +204,6 @@ RB2Pad::RB2Pad():
 
   	// Publish through the node handle Twist type messages to the guardian_controller/command topic
 	vel_pub_ = nh_.advertise<geometry_msgs::Twist>(cmd_topic_vel_, 1);
-	//  Publishes msgs for the pant-tilt cam
-    ptz_pub_ = nh_.advertise<robotnik_msgs::ptz>(cmd_topic_ptz_, 1);
 
  	// Listen through the node handle sensor_msgs::Joy messages from joystick 
     // (these are the references that we will sent to cmd_vel)
@@ -285,8 +268,6 @@ bool RB2Pad::EnableDisablePad(rb2_pad::enable_disable_pad::Request &req, rb2_pad
 void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr& joy)
 {
 	geometry_msgs::Twist vel;
-	robotnik_msgs::ptz ptz;
-	bool ptzEvent = false;
 	static int send_iterations_after_dead_man = 0;
 	
 	// Checks the ROS time to avoid noise in the pad
@@ -404,17 +385,15 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr& joy)
         // Publish only with deadman button pushed for twist use
         if (joy->buttons[dead_man_button_] == 1) {
                 send_iterations_after_dead_man = ITERATIONS_AFTER_DEADMAN;             
-                if (ptzEvent) ptz_pub_.publish(ptz);
-		vel_pub_.publish(vel);
-		pub_command_freq->tick();
-		}
-        else { // send some 0 if deadman is released
+				vel_pub_.publish(vel);
+				pub_command_freq->tick();
+		}else { // send some 0 if deadman is released
           if (send_iterations_after_dead_man >0) {
-		send_iterations_after_dead_man--;
-                vel_pub_.publish(vel);
-		pub_command_freq->tick(); 
+				send_iterations_after_dead_man--;
+				vel_pub_.publish(vel);
+				pub_command_freq->tick(); 
 	        }
-             }
+        }
 }
 
 int RB2Pad::setNamedOutput(std::string name, bool value){
