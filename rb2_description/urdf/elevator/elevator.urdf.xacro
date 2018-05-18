@@ -10,6 +10,14 @@
 	<!-- name : name of the link: -->
 	<!-- hq: selects model in high quality (.dae) -->
 
+
+   <xacro:macro name="solid_cuboid_inertia" params="m h d w">
+    <inertia  ixx="${(m*(h*h+d*d))/12}" ixy = "0" ixz = "0"
+              iyy="${(m*(w*w+d*d))/12}" iyz = "0"
+              izz="${(m*(w*w+h*h))/12}"
+     /> 
+  </xacro:macro>
+
 	<!-- ELEVATOR PLATFORM -->
 	<joint name="${prefix}_platform_joint" type="prismatic">
 			<origin xyz="0.0 0.0 0.285" rpy="0 0 0 " />
@@ -41,10 +49,15 @@
 				<mesh filename="package://rb2_description/meshes/elevator/rb2_elevator.dae"/>
 			</geometry>
 		</collision>
+		<inertial>
+			<mass value="0.005" />
+			<origin xyz="0 0 -0.27" />
+			<solid_cuboid_inertia m="0.005" h="0.05" d="0.05" w="0.05"/>
+		</inertial> 
 	</link>
 
-	<!--xacro:elevator_transmission prefix="${prefix}" />
-	<xacro:elevator_gazebo prefix="${prefix}" /-->
+	<xacro:elevator_transmission prefix="${prefix}" />
+	<xacro:elevator_gazebo prefix="${prefix}" />
 
 	</xacro:macro>
 	
