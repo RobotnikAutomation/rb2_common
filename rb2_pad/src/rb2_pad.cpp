@@ -41,12 +41,12 @@
 #include <robotnik_msgs/set_mode.h>
 #include <rb2_pad/enable_disable_pad.h>
 #include <robotnik_msgs/set_digital_output.h>
+#include <std_srvs/SetBool.h>
 #include <robotnik_msgs/home.h>
 #include <diagnostic_updater/diagnostic_updater.h>
 #include <diagnostic_updater/publisher.h>
 #include <robotnik_msgs/SetElevator.h>
 #include <robotnik_msgs/ElevatorAction.h>
-#include <robotnik_msgs/set_named_digital_output.h>
 
 #define DEFAULT_NUM_OF_BUTTONS		16
 #define DEFAULT_AXIS_LINEAR_X		1
@@ -79,7 +79,8 @@ class RB2Pad
 	private:
 	void padCallback(const sensor_msgs::Joy::ConstPtr& joy);
 	bool EnableDisablePad(rb2_pad::enable_disable_pad::Request &req, rb2_pad::enable_disable_pad::Response &res );
-	int setNamedOutput(std::string name, bool value);
+	int setBumperOverride(bool value);
+	int setManualRelease(bool value);
 
 	ros::NodeHandle nh_;
 
@@ -128,8 +129,8 @@ class RB2Pad
 	ros::ServiceClient set_digital_outputs_client_;  
 	//! Service to activate the elevator
 	ros::ServiceClient set_elevator_client_;  
-	//! Service to named_io
-	ros::ServiceClient  set_named_output_client_;
+	//! Service to safety module
+	ros::ServiceClient  set_manual_release_client_, set_bumper_override_client_;
 	//! Number of buttons of the joystick
 	int num_of_buttons_;
 	//! Pointer to a vector for controlling the event when pushing the buttons
@@ -212,7 +213,8 @@ RB2Pad::RB2Pad():
  	// Request service to activate / deactivate digital I/O
 	set_digital_outputs_client_ = nh_.serviceClient<robotnik_msgs::set_digital_output>(cmd_service_io_);
 	set_elevator_client_ = nh_.serviceClient<robotnik_msgs::SetElevator>(elevator_service_name_);
-	set_named_output_client_ = nh_.serviceClient<robotnik_msgs::set_named_digital_output>("named_io/set_named_digital_output");
+	set_manual_release_client_ = nh_.serviceClient<std_srvs::SetBool>("safety_module/set_manual_release");
+	set_bumper_override_client_ = nh_.serviceClient<std_srvs::SetBool>("safety_module/set_bumper_override");
 
 	bOutput1 = bOutput2 = false;
 
@@ -286,20 +288,20 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr& joy)
 		// MANUAL RELEASE -> 1
 		// write the signal X number of times
 		if(manual_release_true_number_ < ITERATIONS_WRITE_MODBUS){
-			setNamedOutput("manual_release", true);
+			setManualRelease(true);
 			manual_release_true_number_++;
 		}
 
 		// L1 pressed -> Bumper override 1
 		if(joy->buttons[bumper_override_button_] == 1){
 			if(bumper_override_true_number_ < ITERATIONS_WRITE_MODBUS){
-				setNamedOutput("bumper_override", true);
+				setBumperOverride(true);
 				bumper_override_true_number_++;
 			}
 			bumper_override_false_number_ = 0;
 		}else{
 			if(bumper_override_false_number_ < ITERATIONS_WRITE_MODBUS){
-				setNamedOutput("bumper_override", false);
+				setBumperOverride(false);
 				bumper_override_false_number_++;
 			}
 			bumper_override_true_number_ = 0;
@@ -368,8 +370,8 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr& joy)
 
 		// MANUAL RELEASE -> 0
 		if(manual_release_false_number_ < ITERATIONS_WRITE_MODBUS){
-			setNamedOutput("manual_release", false);
-			setNamedOutput("bumper_override", false);
+			setManualRelease(false);
+			setBumperOverride(false);
 			manual_release_false_number_++;
 		}
 
@@ -396,15 +398,23 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr& joy)
         }
 }
 
-int RB2Pad::setNamedOutput(std::string name, bool value){
-	robotnik_msgs::set_named_digital_output named_io_msg;
+int RB2Pad::setManualRelease(bool value){
+	std_srvs::SetBool set_bool_msg;
 
-	named_io_msg.request.name = name;
-	named_io_msg.request.value = value;
-	set_named_output_client_.call(named_io_msg);
+	set_bool_msg.request.data = value;
+	set_manual_release_client_.call(set_bool_msg);
 
 	return 0;
 } 
+
+int RB2Pad::setBumperOverride(bool value){
+	std_srvs::SetBool set_bool_msg;
+
+	set_bool_msg.request.data = value;
+	set_bumper_override_client_.call(set_bool_msg);
+
+	return 0;
+}
 
 int main(int argc, char** argv)
 {
