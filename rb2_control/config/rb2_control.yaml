@@ -16,7 +16,7 @@ robotnik_base_control:
         max_speed: 27.27 # rad/s    
     elevator_joint:
         name: rb2_elevator_platform_joint
-  linear_speed_limit: 1.5 # m/s
+  linear_speed_limit: 1.25 # m/s
   linear_acceleration_limit: 1.5 # m/s^2
   angular_speed_limit: 3 # rad/s
   angular_acceleration_limit: 3 # rad/s^2
@@ -37,7 +37,8 @@ robotnik_base_control:
   motion_odometry: true
   in_motion_timer: 2.0
 
-  set_digital_output_service_hw: robotnik_base_hw/set_digital_output
+  set_digital_output_service_hw: robotnik_modbus_io/write_digital_output
+  io_topic: robotnik_modbus_io/input_output
   has_elevator: true
   elevator_position_up: 0.05 # linear height (m)
   elevator_position_down: 0.0

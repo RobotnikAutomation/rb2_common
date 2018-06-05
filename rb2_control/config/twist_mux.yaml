@@ -7,8 +7,16 @@ topics:
   topic   : move_base/cmd_vel
   timeout : 0.5
   priority: 2
-- name    : docker
-  topic   : docker/cmd_vel
+- name    : robotnik_move
+  topic   : move/cmd_vel
+  timeout : 0.5
+  priority: 2
+- name    : cart_docker
+  topic   : cart_docker/cmd_vel
+  timeout : 0.5
+  priority: 2
+- name    : charge_docker
+  topic   : charge_docker/cmd_vel
   timeout : 0.5
   priority: 2
 - name    : external
