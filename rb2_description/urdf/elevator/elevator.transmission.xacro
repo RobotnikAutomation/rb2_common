@@ -8,7 +8,7 @@
 			<type>transmission_interface/SimpleTransmission</type>
 			<joint name="${prefix}_platform_joint">
 				<!-- for the gazebo plugin -->
-				<hardwareInterface>EffortJointInterface</hardwareInterface>
+				<hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
 				<!-- for ros control controller -->
 				<!--hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface-->
 			</joint>            
