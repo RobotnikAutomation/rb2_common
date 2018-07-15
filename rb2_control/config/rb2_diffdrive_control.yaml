@@ -61,5 +61,11 @@
         max_acceleration       : 6.0  # rad/s^2
 
 
-
+  robotnik_elevator_controller:
+    type        : "robotnik_elevator_controller/RobotnikElevatorController"
+    joint:    
+      elevator_joint:
+        name: rb2_a_elevator_platform_joint
+    elevator_position_up: 0.05
+    elevator_position_down: 0.0
 
