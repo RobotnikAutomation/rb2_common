@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package>
+  <name>rb2_common</name>
+  <version>0.0.0</version>
+  <description>The rb2_common package. It contains rb2 common packages used for robot control and for simulation</description>
+  
+
+  <maintainer email="asoriano@robotnik.es">Angel Soriano</maintainer>
+  <maintainer email="avillena@robotnik.es">Álvaro Villena</maintainer>
+  <maintainer email="dredo@robotnik.es">David Redó</maintainer>
+  <maintainer email="aarnal@robotnik.es">Alejandro Arnal</maintainer>
+  <maintainer email="mbosch@robotnik.es">Marc Bosch</maintainer>
+  <maintainer email="rnavarro@robotnik.es">Román Navarro</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://wiki.ros.org/rb2_common</url>
+  <url type="repository">https://github.com/RobotnikAutomation/rb2_common.git</url>
+  <url type="bugtracker">https://github.com/RobotnikAutomation/rb2_common/issues</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <run_depend>rb2_description</run_depend>
+  <run_depend>rb2_pad</run_depend>
+  <run_depend>rb2_navigation</run_depend>
+  <run_depend>rb2_localization</run_depend>
+  <run_depend>rb2_control</run_depend>
+
+  <export><metapackage/></export>
+
+</package>
