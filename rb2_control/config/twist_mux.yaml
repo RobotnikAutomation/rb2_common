@@ -3,6 +3,10 @@ topics:
   topic   : pad_teleop/cmd_vel
   timeout : 0.5
   priority: 10
+- name    : magnetic_track
+  topic   : magnetic_track/cmd_vel
+  timeout : 0.5
+  priority: 3
 - name    : move_base
   topic   : move_base/cmd_vel
   timeout : 0.5
