@@ -58,13 +58,23 @@
  
   <!-- DOCKING CONTACTS -->
   <joint name="${prefix}docking_joint" type="fixed">
-     <origin xyz="0.361 0.0 0.0" rpy="0 0 0" />
-     <parent link="${prefix}base_link"/>
-     <child link="${prefix}docking_contact_link" />
+    <origin xyz="0.361 0.0 0.0" rpy="0 0 0" />
+    <parent link="${prefix}base_link"/>
+    <child link="${prefix}docking_contact_link" />
   </joint>    
 
   <!-- DOCKING LINK -->
   <link name="${prefix}docking_contact_link" />
+
+  <!-- PICKING CONTACTS -->
+  <joint name="${prefix}picking_joint" type="fixed">
+    <origin xyz="0.476 0.0 0.116" rpy="0 0 0" />
+    <parent link="${prefix}base_link"/>
+    <child link="${prefix}picking_contact_link" />
+  </joint>    
+
+  <!-- PICKING LINK -->
+  <link name="${prefix}picking_contact_link" />
 
 
   </xacro:macro>
