@@ -294,17 +294,19 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr& joy)
 
 		// L1 pressed -> Bumper override 1
 		if(joy->buttons[bumper_override_button_] == 1){
-			if(bumper_override_true_number_ < ITERATIONS_WRITE_MODBUS){
+			if(bumper_override_true_number_ < ITERATIONS_WRITE_MODBUS)
+                        {
 				setBumperOverride(true);
 				bumper_override_true_number_++;
 			}
 			bumper_override_false_number_ = 0;
-		}else{
-			if(bumper_override_false_number_ < ITERATIONS_WRITE_MODBUS){
-				setBumperOverride(false);
-				bumper_override_false_number_++;
-			}
-			bumper_override_true_number_ = 0;
+		}
+                else{
+		//	if(bumper_override_false_number_ < ITERATIONS_WRITE_MODBUS){
+		//		setBumperOverride(false);
+		//		bumper_override_false_number_++;
+		//	}
+		//	bumper_override_true_number_ = 0;
 		}
 
 		if ( joy->buttons[speed_down_button_] == 1 ){
@@ -371,7 +373,7 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr& joy)
 		// MANUAL RELEASE -> 0
 		if(manual_release_false_number_ < ITERATIONS_WRITE_MODBUS){
 			setManualRelease(false);
-			setBumperOverride(false);
+			//setBumperOverride(false);
 			manual_release_false_number_++;
 		}
 
