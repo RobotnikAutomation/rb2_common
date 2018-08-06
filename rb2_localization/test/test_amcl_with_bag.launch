@@ -10,10 +10,17 @@
   <arg name="base_frame" default="$(arg prefix)base_footprint"/>
   <arg name="scan_topic" default="laser/scan"/>
 
-  <param name="/use_sim_time" value="true"/>
+  <arg name="bag_file" />
+  <arg name="map_file" />
+  <arg name="play_rate" default="1" />
+  <arg name="x_init_pose" default="0" />
+  <arg name="y_init_pose" default="0" />
+  <arg name="a_init_pose" default="0" />
+  <arg name="amcl_resample" default="$(arg amcl_resample)" />
 
-  <!--<node pkg="rosbag" type="play" name="player" args="- -clock /home/mbosch/workspaces/fresenius_ws/src/test_localization/fresenius_complete_010818.bag -s 1285 -r 3">-->
-  <node pkg="rosbag" type="play" name="player" args="--clock /home/mbosch/workspaces/fresenius_ws/src/test_localization/mapping2.bag -r 5">
+  <param name="/use_sim_time" value="true"/>
+  
+  <node pkg="rosbag" type="play" name="player" args="--clock $(arg bag_file) -r $(arg play_rate)">
      <remap from="/tf" to="/tf_dirty" />
      <remap from="/tf_static" to="/tf_static_dirty" />
   </node>
@@ -25,27 +32,18 @@
      <param name="remove_frames" value="rb2_map" />
    </node>
    
-   <node name="map_server" pkg="map_server" type="map_server" args="/home/mbosch/workspaces/fresenius_ws/src/test_localization/map.yaml">
-   <!--<node name="map_server" pkg="map_server" type="map_server" args="/home/mbosch/workspaces/fresenius_ws/src/test_localization/fresenius2.yaml">-->
+   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)">
       <param name="frame_id" value="$(arg global_frame)"/>
    </node>
     
    <include file="$(find fresenius_bringup)/launch/localization/amcl.launch">
-        <!-- first map first bag at 1280 sec-->
-        <!--<arg name="x_init_pose" value="-7.074" />-->
-        <!--<arg name="y_init_pose" value="-33.471" />-->
-        <!--<arg name="a_init_pose" value="1.57" />-->
-        <!-- second map first bag at 1280 sec-->
-        <!--<arg name="x_init_pose" value="55.583" />-->
-        <!--<arg name="y_init_pose" value="-1.399" />-->
-        <!--<arg name="a_init_pose" value="3.042" />-->
-        <!-- first map second bag at 0 sec-->
-        <arg name="x_init_pose" value="-12.1" />
-        <arg name="y_init_pose" value="20.4" />
-        <arg name="a_init_pose" value="-1.38" />
+        <arg name="x_init_pose" value="$(arg x_init_pose)" />
+        <arg name="y_init_pose" value="$(arg y_init_pose)" />
+        <arg name="a_init_pose" value="$(arg a_init_pose)" />
+
         <arg name="scan_topic" value="$(arg scan_topic)"/>
         
-        <arg name="amcl_resample" value="true" />
+        <arg name="amcl_resample" value="$(arg amcl_resample)" />
     </include>
 
 
@@ -56,9 +54,9 @@
     <node pkg="tf" type="static_transform_publisher" name="base2footprint" args="0 0 0 0 0 0 $(arg prefix)base_footprint $(arg prefix)base_link 100" />
 
     <node pkg="ira_laser_tools" name="laserscan_multi_merger" type="laserscan_multi_merger" output="screen">
-		<param name="destination_frame" value="rb2_base_link"/>
-		<param name="cloud_destination_topic" value="/merged_cloud"/>
-		<param name="scan_destination_topic" value="/rb2/$(arg scan_topic)"/>
+	<param name="destination_frame" value="rb2_base_link"/>
+	<param name="cloud_destination_topic" value="/merged_cloud"/>
+	<param name="scan_destination_topic" value="/rb2/$(arg scan_topic)"/>
         <param name="laserscan_topics" value ="front_laser/scan rear_laser/scan" /> <!-- LIST OF THE LASER SCAN TOPICS TO SUBSCRIBE -->
     </node>
 
