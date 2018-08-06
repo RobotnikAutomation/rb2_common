@@ -12,6 +12,7 @@
   
   <!-- Parameters -->
   <param name="cmd_topic_vel" value="pad_teleop/cmd_vel" type="string"/>
+  <param name="cmd_topic_unsafe_vel" value="pad_teleop/cmd_vel_unsafe" type="string"/>
 
   <rosparam command="load" file="$(find rb2_pad)/config/$(arg pad_model).yaml" />
   

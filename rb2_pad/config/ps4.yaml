@@ -11,15 +11,16 @@ button_speed_up: 3
 button_speed_down: 1
 button_bumber_override: 4
 button_dead_man: 5
+button_dead_man_unsafe: 7
 button_output_1: 2
 button_output_2: 0
 output_1: 10 
 output_2: 11
-button_home: 6
+button_home: 7 # unused
 tilt_increment: 5
 pan_increment: 5
 zoom_increment: 300
-button_kinematic_mode: 7
+button_kinematic_mode: 7 # unused
 joystick_dead_zone: "true" #useful for x-wam
 cmd_service_home:  rb2_controller/home
 check_message_timeout: true

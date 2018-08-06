@@ -77,6 +77,7 @@ class RB2Pad
 	void Update();
 
 	private:
+        bool checkButtonPressed(const std::vector<int> &buttons, const int number);
 	void padCallback(const sensor_msgs::Joy::ConstPtr& joy);
 	bool EnableDisablePad(rb2_pad::enable_disable_pad::Request &req, rb2_pad::enable_disable_pad::Response &res );
 	int setBumperOverride(bool value);
@@ -89,10 +90,15 @@ class RB2Pad
 	double l_scale_, a_scale_, l_scale_z_; 
 	//! It will publish into command velocity (for the robot)
 	ros::Publisher vel_pub_;
+	//! It will publish into command velocity (for the robot)
+	ros::Publisher unsafe_vel_pub_;
+        bool has_unsafe_vel_;
 	//! It will be suscribed to the joystick
 	ros::Subscriber pad_sub_;
 	//! Name of the topic where it will be publishing the velocity
 	std::string cmd_topic_vel_;
+	//! Name of the topic where it will be publishing the velocity for unsafe
+	std::string cmd_topic_unsafe_vel_;
 	//! Name of the service where it will be modifying the digital outputs
 	std::string cmd_service_io_;
 	//! Name of the service where to actuate the elevator
@@ -101,7 +107,7 @@ class RB2Pad
 	bool check_message_timeout_;
 	double current_vel;
 	//! Number of the DEADMAN button
-	int dead_man_button_, bumper_override_button_;
+	int dead_man_button_, dead_man_unsafe_button_, bumper_override_button_;
 	//! Number of the button for increase or decrease the speed max of the joystick	
 	int speed_up_button_, speed_down_button_;
 	int button_output_1_, button_output_2_;
@@ -172,7 +178,9 @@ RB2Pad::RB2Pad():
 	nh_.param("scale_linear", l_scale_, DEFAULT_SCALE_LINEAR);
 	nh_.param("scale_linear_z", l_scale_z_, DEFAULT_SCALE_LINEAR_Z);
 	nh_.param("cmd_topic_vel", cmd_topic_vel_, cmd_topic_vel_);
+	nh_.param("cmd_topic_unsafe_vel", cmd_topic_unsafe_vel_, cmd_topic_vel_);
 	nh_.param("button_dead_man", dead_man_button_, dead_man_button_);
+	nh_.param("button_dead_man_unsafe", dead_man_unsafe_button_, -1);  // NOT SET BY DEFAULT
 	nh_.param("button_bumber_override", bumper_override_button_, bumper_override_button_);
 	nh_.param("button_speed_up", speed_up_button_, speed_up_button_);  //4 Thrustmaster
 	nh_.param("button_speed_down", speed_down_button_, speed_down_button_); //5 Thrustmaster
@@ -203,8 +211,21 @@ RB2Pad::RB2Pad():
 		ROS_INFO("bREG %d", i);
 		}
 
-  	// Publish through the node handle Twist type messages to the guardian_controller/command topic
+  	// Publish through the node handle Twist type messages to the guardian_controller/command topicç
+        if (cmd_topic_unsafe_vel_ == "")
+	{
+		ROS_ERROR("RB2Pad: cmd_topic_vel is empty, so things are going to be crazy");
+	}
 	vel_pub_ = nh_.advertise<geometry_msgs::Twist>(cmd_topic_vel_, 1);
+        if (cmd_topic_unsafe_vel_ != "" and dead_man_unsafe_button_ != -1) {
+            ROS_WARN("RB2Pad: We have an unsafe cmd vel in topic \"%s\". Be aware of it (press button %d for it)", cmd_topic_unsafe_vel_.c_str(), dead_man_unsafe_button_);
+	    unsafe_vel_pub_ = nh_.advertise<geometry_msgs::Twist>(cmd_topic_unsafe_vel_, 1);
+            has_unsafe_vel_ = true;
+        }
+	else {
+            ROS_WARN("RB2Pad: We do not have an unsafe cmd_vel (button %d, topic %s)", dead_man_unsafe_button_, cmd_topic_unsafe_vel_.c_str());
+            has_unsafe_vel_ = false;
+	}
 
  	// Listen through the node handle sensor_msgs::Joy messages from joystick 
     // (these are the references that we will sent to cmd_vel)
@@ -266,6 +287,15 @@ bool RB2Pad::EnableDisablePad(rb2_pad::enable_disable_pad::Request &req, rb2_pad
 	return true;
 }
 */
+bool RB2Pad::checkButtonPressed(const std::vector<int> &buttons, const int number)
+{
+    if (number < 0 or number > buttons.size())
+    {
+        ROS_WARN_THROTTLE(2, "RB2Pad::checkButtonPressed: You are pressing a disabled button");
+        return false;
+    }
+    return buttons[number] == true;
+}
 
 void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr& joy)
 {
@@ -280,7 +310,7 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr& joy)
 	vel.linear.x = 0.0;   vel.linear.y = 0.0; vel.linear.z = 0.0;
 
   	// Actions dependant on dead-man button
- 	if (joy->buttons[dead_man_button_] == 1) {
+ 	if (checkButtonPressed(joy->buttons,dead_man_button_) == true) {
 		//ROS_ERROR("RB2Pad::padCallback: DEADMAN button %d", dead_man_button_);
 		// Set the current velocity level
 
@@ -293,7 +323,7 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr& joy)
 		}
 
 		// L1 pressed -> Bumper override 1
-		if(joy->buttons[bumper_override_button_] == 1){
+		if(checkButtonPressed(joy->buttons,bumper_override_button_) == true){
 			if(bumper_override_true_number_ < ITERATIONS_WRITE_MODBUS)
                         {
 				setBumperOverride(true);
@@ -309,7 +339,7 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr& joy)
 		//	bumper_override_true_number_ = 0;
 		}
 
-		if ( joy->buttons[speed_down_button_] == 1 ){
+		if ( checkButtonPressed(joy->buttons,speed_down_button_) == true ){
 
 			if(!bRegisteredButtonEvent[speed_down_button_]) 
 				if(current_vel > 0.1){
@@ -325,7 +355,7 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr& joy)
 			bRegisteredButtonEvent[speed_down_button_] = false;
 		 }
 		 
-		if (joy->buttons[speed_up_button_] == 1){
+		if (checkButtonPressed(joy->buttons,speed_up_button_) == true){
 			if(!bRegisteredButtonEvent[speed_up_button_])
 				if(current_vel < 0.9){
 					current_vel = current_vel + 0.1;
@@ -387,15 +417,21 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr& joy)
 	sus_joy_freq->tick();	// Ticks the reception of joy events
 
         // Publish only with deadman button pushed for twist use
-        if (joy->buttons[dead_man_button_] == 1) {
-                send_iterations_after_dead_man = ITERATIONS_AFTER_DEADMAN;             
-				vel_pub_.publish(vel);
-				pub_command_freq->tick();
+        if (checkButtonPressed(joy->buttons,dead_man_button_) == true) {
+                send_iterations_after_dead_man = ITERATIONS_AFTER_DEADMAN;
+		    vel_pub_.publish(vel);
+                if (checkButtonPressed(joy->buttons, dead_man_unsafe_button_) == true and has_unsafe_vel_) {
+		    unsafe_vel_pub_.publish(vel);
+                }
+		    pub_command_freq->tick();
 		}else { // send some 0 if deadman is released
           if (send_iterations_after_dead_man >0) {
-				send_iterations_after_dead_man--;
-				vel_pub_.publish(vel);
-				pub_command_freq->tick(); 
+		    send_iterations_after_dead_man--;
+		    vel_pub_.publish(vel);
+                if (checkButtonPressed(joy->buttons, dead_man_unsafe_button_) == true and has_unsafe_vel_) {
+		    unsafe_vel_pub_.publish(vel);
+                }
+	            pub_command_freq->tick(); 
 	        }
         }
 }
