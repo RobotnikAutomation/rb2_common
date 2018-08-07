@@ -419,18 +419,24 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr& joy)
         // Publish only with deadman button pushed for twist use
         if (checkButtonPressed(joy->buttons,dead_man_button_) == true) {
                 send_iterations_after_dead_man = ITERATIONS_AFTER_DEADMAN;
-		    vel_pub_.publish(vel);
                 if (checkButtonPressed(joy->buttons, dead_man_unsafe_button_) == true and has_unsafe_vel_) {
 		    unsafe_vel_pub_.publish(vel);
                 }
+else
+{
+		    vel_pub_.publish(vel);
+}
 		    pub_command_freq->tick();
 		}else { // send some 0 if deadman is released
           if (send_iterations_after_dead_man >0) {
 		    send_iterations_after_dead_man--;
-		    vel_pub_.publish(vel);
                 if (checkButtonPressed(joy->buttons, dead_man_unsafe_button_) == true and has_unsafe_vel_) {
 		    unsafe_vel_pub_.publish(vel);
                 }
+else
+{
+		    vel_pub_.publish(vel);
+}
 	            pub_command_freq->tick(); 
 	        }
         }
