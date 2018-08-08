@@ -8,12 +8,12 @@
 			<type>transmission_interface/SimpleTransmission</type>
 			<joint name="${prefix}_platform_joint">
 				<!-- for the gazebo plugin -->
-				<hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+				<!--hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface-->
 				<!-- for ros control controller -->
-				<!--hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface-->
+				<hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
 			</joint>            
 			<actuator name="${prefix}_platform_joint_motor">
-				<hardwareInterface>EffortJointInterface</hardwareInterface>       
+				<hardwareInterface>PositionJointInterface</hardwareInterface>       
 				<mechanicalReduction>1</mechanicalReduction>
 				<motorTorqueConstant>20</motorTorqueConstant>
 			</actuator>

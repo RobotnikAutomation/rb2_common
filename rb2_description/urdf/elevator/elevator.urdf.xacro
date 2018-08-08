@@ -24,7 +24,8 @@
 			<parent link="${parent}"/>
 			<child link="${prefix}_platform_link" />
 			<axis xyz="0 0 1"/>
-			<limit effort="1.0" lower="0.0" upper="0.05" velocity="0.5"/>
+			<limit effort="100.0" lower="0.0" upper="0.05" velocity="0.5"/>
+			<dynamics damping="0.7"/>
 	</joint> 
 	<link name="${prefix}_platform_link">
 		<visual>
@@ -50,9 +51,9 @@
 			</geometry>
 		</collision>
 		<inertial>
-			<mass value="0.005" />
+			<mass value="0.05" />
 			<origin xyz="0 0 -0.27" />
-			<solid_cuboid_inertia m="0.005" h="0.05" d="0.05" w="0.05"/>
+			<solid_cuboid_inertia m="0.05" h="0.05" d="0.05" w="0.05"/>
 		</inertial> 
 	</link>
 
