@@ -15,7 +15,6 @@
 			<actuator name="${prefix}_platform_joint_motor">
 				<hardwareInterface>EffortJointInterface</hardwareInterface>       
 				<mechanicalReduction>1</mechanicalReduction>
-				<motorTorqueConstant>20</motorTorqueConstant>
 			</actuator>
 		</transmission>
 	</xacro:macro>
