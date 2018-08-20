@@ -16,7 +16,7 @@
   elevator_controller:
     type:  effort_controllers/JointEffortController
     joint: rb2_elevator_platform_joint
-    pid: {p: 100.0, i: 0.01, d: 10.0}
+    pid: {p: 10.0, i: 0.1, d: 0.0}
 
   robotnik_base_control:
     type        : "diff_drive_controller/DiffDriveController"
@@ -66,6 +66,19 @@
     joint:    
       elevator_joint:
         name: rb2_a_elevator_platform_joint
-    elevator_position_up: 0.05
+    elevator_position_up: 10
     elevator_position_down: 0.0
+    # delay time to perform the elevation
+    elevation_action_time: 1.0
+    # params for the pickup avoiding Gazebo physics
+    gazebo:
+      # if true, the carts will be raised avoiding contact
+      disable_gazebo_physics_for_pickup: true
+      pickup_service: "/elevator_fake_pickup_gazebo/simple_pick"
+      place_service: "/elevator_fake_pickup_gazebo/simple_place"
+      # model id used in Gazebo
+      robot_model: "rb2_a"
+      # distance in z to move the picked cart
+      elevation_offset_z: 0.07  
+      
 

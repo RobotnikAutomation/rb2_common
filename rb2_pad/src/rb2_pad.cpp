@@ -111,10 +111,8 @@ class RB2Pad {
     //! Number of the button for increase or decrease the speed max of the
     //! joystick
     int speed_up_button_, speed_down_button_;
-    int button_output_1_, button_output_2_;
     int button_raise_elevator_, button_lower_elevator_, button_stop_elevator_,
         axis_elevator_;
-    int output_1_, output_2_;
     bool bOutput1, bOutput2;
     //! button to change kinematic mode
     int button_kinematic_mode_;
@@ -159,7 +157,9 @@ class RB2Pad {
     //! Flag to enable/disable the communication with the publishers topics
     // bool bEnable;
     //! Client of the sound play service
-    //  sound_play::SoundClient sc;
+    //  sound_play::SoundClient sc
+    //! sets the elevator by reading from an axis, otherwise reading from buttons
+    bool use_axis_for_elevator;
 };
 
 RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
@@ -189,17 +189,15 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
 
     // DIGITAL OUTPUTS CONF
     nh_.param("cmd_service_io", cmd_service_io_, cmd_service_io_);
-    nh_.param("button_output_1", button_output_1_, button_output_1_);
-    nh_.param("button_output_2", button_output_2_, button_output_2_);
-    nh_.param("output_1", output_1_, output_1_);
-    nh_.param("output_2", output_2_, output_2_);
-    // PANTILT CONF
+   // PANTILT CONF
     nh_.param("button_home", button_home_, button_home_);
     nh_.param("button_lower_elevator", button_lower_elevator_, 6);
     nh_.param("button_raise_elevator", button_raise_elevator_, 4);
     nh_.param("button_stop_elevator", button_stop_elevator_, 16);
 
     nh_.param("axis_elevator", axis_elevator_, 1);
+    if(axis_elevator_ < 0)
+		use_axis_for_elevator = false;
 
     nh_.param("cmd_service_home", cmd_home_, cmd_home_);
 
@@ -403,29 +401,53 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
         vel.linear.x = current_vel * l_scale_ * joy->axes[linear_x_];
         vel.linear.y = current_vel * l_scale_ * joy->axes[linear_y_];
         vel.linear.z = current_vel * l_scale_z_ * joy->axes[linear_z_];
-
+		
+		
         // ELEVATOR
+        robotnik_msgs::SetElevator elevator_msg_srv;
+		if(use_axis_for_elevator){
+			if (joy->axes[axis_elevator_] > 0.99) {
+				// ROS_INFO("RB2Pad::padCallback: button %d calling service:%s
+				// RAISE", button_stop_elevator_,elevator_service_name_.c_str());
+				
 
-        if (joy->axes[axis_elevator_] > 0.99) {
-            // ROS_INFO("RB2Pad::padCallback: button %d calling service:%s
-            // RAISE", button_stop_elevator_,elevator_service_name_.c_str());
-            robotnik_msgs::SetElevator elevator_msg_srv;
+				elevator_msg_srv.request.action.action =
+					robotnik_msgs::ElevatorAction::RAISE;
+				set_elevator_client_.call(elevator_msg_srv);
+			}
 
-            elevator_msg_srv.request.action.action =
-                robotnik_msgs::ElevatorAction::RAISE;
-            set_elevator_client_.call(elevator_msg_srv);
-        }
+			if (joy->axes[axis_elevator_] < -0.99) {
+				// ROS_INFO("RB2Pad::padCallback: button %d calling service:%s
+				// LOWER", button_stop_elevator_,elevator_service_name_.c_str());
 
-        if (joy->axes[axis_elevator_] < -0.99) {
-            // ROS_INFO("RB2Pad::padCallback: button %d calling service:%s
-            // LOWER", button_stop_elevator_,elevator_service_name_.c_str());
-            robotnik_msgs::SetElevator elevator_msg_srv;
+				elevator_msg_srv.request.action.action =
+					robotnik_msgs::ElevatorAction::LOWER;
+				set_elevator_client_.call(elevator_msg_srv);
+			}
+		}else{
+			 if (checkButtonPressed(joy->buttons, button_lower_elevator_) == true) {
+				if (!bRegisteredButtonEvent[button_lower_elevator_]){
+					bRegisteredButtonEvent[button_lower_elevator_] = true;
+					elevator_msg_srv.request.action.action =
+					robotnik_msgs::ElevatorAction::LOWER;
+					set_elevator_client_.call(elevator_msg_srv);
+				}
 
-            elevator_msg_srv.request.action.action =
-                robotnik_msgs::ElevatorAction::LOWER;
-            set_elevator_client_.call(elevator_msg_srv);
-        }
+			} else {
+				bRegisteredButtonEvent[button_lower_elevator_] = false;
+			}
+			 if (checkButtonPressed(joy->buttons, button_raise_elevator_) == true) {
+				if (!bRegisteredButtonEvent[button_raise_elevator_]){
+					bRegisteredButtonEvent[button_raise_elevator_] = true;
+					elevator_msg_srv.request.action.action =
+					robotnik_msgs::ElevatorAction::RAISE;
+					set_elevator_client_.call(elevator_msg_srv);
+				}
 
+			} else {
+				bRegisteredButtonEvent[button_raise_elevator_] = false;
+			}
+		}
     } else {
         // MANUAL RELEASE -> 0
         if (manual_release_false_number_ < ITERATIONS_WRITE_MODBUS) {

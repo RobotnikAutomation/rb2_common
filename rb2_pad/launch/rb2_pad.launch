@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="pad_model" default="ps4"/>
+  <arg name="pad_model" default="$(optenv ROBOT_PAD_MODEL ps4)"/>
   <arg name="pad_deadzone" default="$(optenv ROBOT_PAD_DEADZONE 0.02)" />
   <arg name="pad_dev" default="$(optenv ROBOT_PAD_DEV /dev/input/js_base)" />
   <!-- joy node -->
