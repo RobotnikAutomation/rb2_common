@@ -359,32 +359,39 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
             //	bumper_override_true_number_ = 0;
         }
 
+        double speed_step = 0.1;
+        double minimum_speed = 0.1;
+        double maximum_speed = 1.0;
         if (checkButtonPressed(joy->buttons, speed_down_button_) == true) {
-            if (!bRegisteredButtonEvent[speed_down_button_])
-                if (current_vel > 0.1) {
-                    current_vel = current_vel - 0.1;
-                    bRegisteredButtonEvent[speed_down_button_] = true;
-                    ROS_INFO("Velocity: %f%%", current_vel * 100.0);
-                    char buf[50] = "\0";
-                    int percent = (int)(current_vel * 100.0);
-                    sprintf(buf, " %d percent", percent);
-                    // sc.say(buf);
-                }
+            if (!bRegisteredButtonEvent[speed_down_button_]) 
+            {
+                current_vel = current_vel - speed_step;
+                if (current_vel < minimum_speed)
+                   current_vel = minimum_speed; 
+                bRegisteredButtonEvent[speed_down_button_] = true;
+                ROS_INFO("Velocity: %f%%", current_vel * 100.0);
+                char buf[50] = "\0";
+                int percent = (int)(current_vel * 100.0);
+                sprintf(buf, " %d percent", percent);
+                // sc.say(buf);
+            }
         } else {
             bRegisteredButtonEvent[speed_down_button_] = false;
         }
 
         if (checkButtonPressed(joy->buttons, speed_up_button_) == true) {
             if (!bRegisteredButtonEvent[speed_up_button_])
-                if (current_vel < 0.9) {
-                    current_vel = current_vel + 0.1;
-                    bRegisteredButtonEvent[speed_up_button_] = true;
-                    ROS_INFO("Velocity: %f%%", current_vel * 100.0);
-                    char buf[50] = "\0";
-                    int percent = (int)(current_vel * 100.0);
-                    sprintf(buf, " %d percent", percent);
-                    // sc.say(buf);
-                }
+            {
+                current_vel = current_vel + speed_step;
+                if (current_vel > maximum_speed)
+                    current_vel = maximum_speed;
+                bRegisteredButtonEvent[speed_up_button_] = true;
+                ROS_INFO("Velocity: %f%%", current_vel * 100.0);
+                char buf[50] = "\0";
+                int percent = (int)(current_vel * 100.0);
+                sprintf(buf, " %d percent", percent);
+                // sc.say(buf);
+            }
 
         } else {
             bRegisteredButtonEvent[speed_up_button_] = false;
