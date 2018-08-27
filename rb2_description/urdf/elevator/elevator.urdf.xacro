@@ -45,12 +45,12 @@
 		</visual>  
 		<collision>
 			<origin xyz="0 0 -0.0" rpy="0 0 0 " />
-			<!--geometry>
-				<box size="0.837 0.590 0.05" />
-			</geometry-->
 			<geometry>
+				<box size="0.65 0.5 0.025" />
+			</geometry>
+			<!--geometry>
 					<mesh filename="package://rb2_description/meshes/elevator/rb2_elevator.dae"/>
-				</geometry>
+				</geometry-->
 		</collision>
 		<inertial>
 			<mass value="0.005" />
