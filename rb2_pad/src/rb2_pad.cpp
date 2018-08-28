@@ -197,7 +197,9 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
 
     nh_.param("axis_elevator", axis_elevator_, 1);
     if(axis_elevator_ < 0)
-		use_axis_for_elevator = false;
+        use_axis_for_elevator = false;
+    else
+        use_axis_for_elevator = true;
 
     nh_.param("cmd_service_home", cmd_home_, cmd_home_);
 
