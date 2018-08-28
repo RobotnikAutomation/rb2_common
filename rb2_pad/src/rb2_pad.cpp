@@ -407,8 +407,7 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
         robotnik_msgs::SetElevator elevator_msg_srv;
 		if(use_axis_for_elevator){
 			if (joy->axes[axis_elevator_] > 0.99) {
-				// ROS_INFO("RB2Pad::padCallback: button %d calling service:%s
-				// RAISE", button_stop_elevator_,elevator_service_name_.c_str());
+				 ROS_INFO_THROTTLE(10, "RB2Pad::padCallback: button %d calling service:%sRAISE", button_stop_elevator_,elevator_service_name_.c_str());
 				
 
 				elevator_msg_srv.request.action.action =
@@ -417,8 +416,7 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
 			}
 
 			if (joy->axes[axis_elevator_] < -0.99) {
-				// ROS_INFO("RB2Pad::padCallback: button %d calling service:%s
-				// LOWER", button_stop_elevator_,elevator_service_name_.c_str());
+				 ROS_INFO_THROTTLE(10, "RB2Pad::padCallback: button %d calling service:%s LOWER", button_stop_elevator_,elevator_service_name_.c_str());
 
 				elevator_msg_srv.request.action.action =
 					robotnik_msgs::ElevatorAction::LOWER;
