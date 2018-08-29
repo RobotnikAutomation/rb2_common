@@ -78,7 +78,7 @@
       place_service: "/elevator_fake_pickup_gazebo/simple_place"
       # model id used in Gazebo
       robot_model: "rb2_a"
-      # distance in z to move the picked cart
-      elevation_offset_z: 0.07  
+      # distance in z to move the picked cart (disabled)
+      # elevation_offset_z: 0.07  
       
 
