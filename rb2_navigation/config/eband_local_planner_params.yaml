@@ -1,0 +1,18 @@
+base_local_planner: eband_local_planner/EBandPlannerROS
+
+EBandPlannerROS:
+
+  # GoalTolerance
+  xy_goal_tolerance: 0.2
+  yaw_goal_tolerance: 0.1
+  rot_stopped_vel: 0.01
+  trans_stopped_vel: 0.01 
+
+  marker_lifetime: 0.05
+
+  max_vel_lin: 1.0
+  max_vel_th: 0.3
+  max_rotational_acceleration: 0.3
+  k_prop: 1.5
+  k_damp: 1.0
+
