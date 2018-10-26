@@ -79,13 +79,13 @@ class RB2Pad {
     void padCallback(const sensor_msgs::Joy::ConstPtr &joy);
     bool EnableDisablePad(rb2_pad::enable_disable_pad::Request &req,
                           rb2_pad::enable_disable_pad::Response &res);
-    int setBumperOverride(bool value);
+    int setSafetyOverride(bool value);
     int setManualRelease(bool value);
 
     ros::NodeHandle nh_;
 
     int manual_release_true_number_, manual_release_false_number_,
-        bumper_override_false_number_, bumper_override_true_number_;
+        safety_override_false_number_, safety_override_true_number_;
     int linear_x_, linear_y_, linear_z_, angular_;
     double l_scale_, a_scale_, l_scale_z_;
     //! It will publish into command velocity (for the robot)
@@ -107,7 +107,7 @@ class RB2Pad {
     bool check_message_timeout_;
     double current_vel;
     //! Number of the DEADMAN button
-    int dead_man_button_, dead_man_unsafe_button_, bumper_override_button_;
+    int dead_man_button_, dead_man_unsafe_button_, safety_override_button_;
     //! Number of the button for increase or decrease the speed max of the
     //! joystick
     int speed_up_button_, speed_down_button_;
@@ -136,7 +136,7 @@ class RB2Pad {
     //! Service to activate the elevator
     ros::ServiceClient set_elevator_client_;
     //! Service to safety module
-    ros::ServiceClient set_manual_release_client_, set_bumper_override_client_;
+    ros::ServiceClient set_manual_release_client_, set_safety_override_client_;
     //! Number of buttons of the joystick
     int num_of_buttons_;
     //! Pointer to a vector for controlling the event when pushing the buttons
@@ -180,8 +180,8 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
     nh_.param("button_dead_man", dead_man_button_, dead_man_button_);
     nh_.param("button_dead_man_unsafe", dead_man_unsafe_button_,
               -1);  // NOT SET BY DEFAULT
-    nh_.param("button_bumber_override", bumper_override_button_,
-              bumper_override_button_);
+    nh_.param("button_safety_override", safety_override_button_,
+              safety_override_button_);
     nh_.param("button_speed_up", speed_up_button_,
               speed_up_button_);  // 4 Thrustmaster
     nh_.param("button_speed_down", speed_down_button_,
@@ -249,15 +249,15 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
         nh_.serviceClient<robotnik_msgs::SetElevator>(elevator_service_name_);
     set_manual_release_client_ = nh_.serviceClient<std_srvs::SetBool>(
         "safety_module/set_manual_release");
-    set_bumper_override_client_ = nh_.serviceClient<std_srvs::SetBool>(
-        "safety_module/set_bumper_override");
+    set_safety_override_client_ = nh_.serviceClient<std_srvs::SetBool>(
+        "safety_module/set_safety_override");
 
     bOutput1 = bOutput2 = false;
 
     manual_release_false_number_ = 0;
     manual_release_true_number_ = 0;
-    bumper_override_false_number_ = 0;
-    bumper_override_true_number_ = 0;
+    safety_override_false_number_ = 0;
+    safety_override_true_number_ = 0;
 
     // Request service to start homing
     doHome = nh_.serviceClient<robotnik_msgs::home>(cmd_home_);
@@ -344,19 +344,19 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
             manual_release_true_number_++;
         }
 
-        // L1 pressed -> Bumper override 1
-        if (checkButtonPressed(joy->buttons, bumper_override_button_) == true) {
-            if (bumper_override_true_number_ < ITERATIONS_WRITE_MODBUS) {
-                setBumperOverride(true);
-                bumper_override_true_number_++;
+        // L1 pressed -> Safety override 1
+        if (checkButtonPressed(joy->buttons, safety_override_button_) == true) {
+            if (safety_override_true_number_ < ITERATIONS_WRITE_MODBUS) {
+                setSafetyOverride(true);
+                safety_override_true_number_++;
             }
-            bumper_override_false_number_ = 0;
+            safety_override_false_number_ = 0;
         } else {
-            //	if(bumper_override_false_number_ < ITERATIONS_WRITE_MODBUS){
-            //		setBumperOverride(false);
-            //		bumper_override_false_number_++;
+            //	if(safety_override_false_number_ < ITERATIONS_WRITE_MODBUS){
+            //		setSafetyOverride(false);
+            //		safety_override_false_number_++;
             //	}
-            //	bumper_override_true_number_ = 0;
+            //	safety_override_true_number_ = 0;
         }
 
         double speed_step = 0.1;
@@ -452,13 +452,13 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
         // MANUAL RELEASE -> 0
         if (manual_release_false_number_ < ITERATIONS_WRITE_MODBUS) {
             setManualRelease(false);
-            // setBumperOverride(false);
+            // setSafetyOverride(false);
             manual_release_false_number_++;
         }
 
         manual_release_true_number_ = 0;
-        bumper_override_false_number_ = 0;
-        bumper_override_true_number_ = 0;
+        safety_override_false_number_ = 0;
+        safety_override_true_number_ = 0;
         vel.angular.x = 0.0;
         vel.angular.y = 0.0;
         vel.angular.z = 0.0;
@@ -504,11 +504,11 @@ int RB2Pad::setManualRelease(bool value) {
     return 0;
 }
 
-int RB2Pad::setBumperOverride(bool value) {
+int RB2Pad::setSafetyOverride(bool value) {
     std_srvs::SetBool set_bool_msg;
 
     set_bool_msg.request.data = value;
-    set_bumper_override_client_.call(set_bool_msg);
+    set_safety_override_client_.call(set_bool_msg);
 
     return 0;
 }

@@ -4,12 +4,12 @@ axis_linear_x: 1
 axis_linear_y: 0
 axis_angular: 2
 axis_linear_z: 5
-scale_linear: 1.5
-scale_angular: 1.5
+scale_linear: 1
+scale_angular: 1
 scale_linear_z: 20.0 
 button_speed_up: 3
 button_speed_down: 1
-button_bumber_override: 4
+button_safety_override: 4
 button_dead_man: 5
 button_dead_man_unsafe: 7
 button_output_1: 2
