@@ -52,6 +52,7 @@ robotnik_base_control:
   imu_topic: 'imu/data'
   odom_publish_frequency: 100
   cmd_vel        : 'robotnik_base_control/cmd_vel'
+  applied_cmd_vel : 'robotnik_base_control/applied_cmd_vel'
   motion_odometry: true
   in_motion_timer: 2.0
   position_covariance: 0.0000001
