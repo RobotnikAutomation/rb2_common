@@ -11,6 +11,7 @@ button_speed_down: 4
 button_safety_override: 4
 button_dead_man: 9
 button_dead_man_unsafe: 7
+button_laser_mode: 6
 cmd_service_home:  rb2_controller/home
 check_message_timeout: true
 
@@ -19,3 +20,4 @@ axis_elevator: -1
 button_lower_elevator: 1
 button_raise_elevator: 0
 elevator_service_name: robotnik_base_control/set_elevator
+laser_modes: ["standard","docking_station","cart","cart_docking_cart","docking_cart"]

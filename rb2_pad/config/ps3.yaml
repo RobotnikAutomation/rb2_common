@@ -10,6 +10,8 @@ scale_linear_z: 20.0
 button_speed_up: 12
 button_speed_down: 14
 button_dead_man: 11
+button_dead_man_unsafe: 9
+button_laser_mode: 17
 button_output_1: 15
 button_output_2: 13
 output_1: 1 
@@ -27,3 +29,4 @@ pan_increment: 5
 button_kinematic_mode: 9
 cmd_service_home:  /rb2_controller/home
 check_message_timeout: true
+laser_modes: ["standard","docking_station","cart","cart_docking_cart","docking_cart"]

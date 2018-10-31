@@ -46,6 +46,7 @@
 #include <robotnik_msgs/set_digital_output.h>
 #include <robotnik_msgs/set_mode.h>
 #include <std_srvs/SetBool.h>
+#include <robotnik_msgs/SetLaserMode.h>
 #include <unistd.h>
 
 #define DEFAULT_NUM_OF_BUTTONS 16
@@ -57,7 +58,7 @@
 #define DEFAULT_SCALE_ANGULAR 2.0
 #define DEFAULT_SCALE_LINEAR_Z 1.0
 
-#define ITERATIONS_WRITE_MODBUS 2
+#define ITERATIONS_CALL_SAFETY_MODULE 2
 #define ITERATIONS_AFTER_DEADMAN 3.0
 
 #define JOY_ERROR_TIME 1.0
@@ -81,6 +82,7 @@ class RB2Pad {
                           rb2_pad::enable_disable_pad::Response &res);
     int setSafetyOverride(bool value);
     int setManualRelease(bool value);
+    int loopBetweenLaserModes();
 
     ros::NodeHandle nh_;
 
@@ -107,7 +109,7 @@ class RB2Pad {
     bool check_message_timeout_;
     double current_vel;
     //! Number of the DEADMAN button
-    int dead_man_button_, dead_man_unsafe_button_, safety_override_button_;
+    int dead_man_button_, dead_man_unsafe_button_, safety_override_button_, laser_mode_button_;
     //! Number of the button for increase or decrease the speed max of the
     //! joystick
     int speed_up_button_, speed_down_button_;
@@ -136,7 +138,7 @@ class RB2Pad {
     //! Service to activate the elevator
     ros::ServiceClient set_elevator_client_;
     //! Service to safety module
-    ros::ServiceClient set_manual_release_client_, set_safety_override_client_;
+    ros::ServiceClient set_manual_release_client_, set_safety_override_client_, set_laser_mode_client_;
     //! Number of buttons of the joystick
     int num_of_buttons_;
     //! Pointer to a vector for controlling the event when pushing the buttons
@@ -160,6 +162,9 @@ class RB2Pad {
     //  sound_play::SoundClient sc
     //! sets the elevator by reading from an axis, otherwise reading from buttons
     bool use_axis_for_elevator;
+    //! Laser modes, to loop between them;
+    std::vector<std::string> laser_modes_;
+    int current_laser_mode_;
 };
 
 RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
@@ -182,6 +187,8 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
               -1);  // NOT SET BY DEFAULT
     nh_.param("button_safety_override", safety_override_button_,
               safety_override_button_);
+    nh_.param("button_laser_mode", laser_mode_button_,
+              laser_mode_button_);
     nh_.param("button_speed_up", speed_up_button_,
               speed_up_button_);  // 4 Thrustmaster
     nh_.param("button_speed_down", speed_down_button_,
@@ -251,6 +258,12 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
         "safety_module/set_manual_release");
     set_safety_override_client_ = nh_.serviceClient<std_srvs::SetBool>(
         "safety_module/set_safety_override");
+    set_laser_mode_client_ = nh_.serviceClient<robotnik_msgs::SetLaserMode>(
+        "safety_module/set_laser_mode");
+
+    laser_modes_.clear();
+    nh_.param<std::vector<std::string> >("laser_modes", laser_modes_, laser_modes_);
+    current_laser_mode_ = 0;
 
     bOutput1 = bOutput2 = false;
 
@@ -339,24 +352,34 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
         manual_release_false_number_ = 0;
         // MANUAL RELEASE -> 1
         // write the signal X number of times
-        if (manual_release_true_number_ < ITERATIONS_WRITE_MODBUS) {
+        if (manual_release_true_number_ < ITERATIONS_CALL_SAFETY_MODULE) {
             setManualRelease(true);
             manual_release_true_number_++;
         }
 
         // L1 pressed -> Safety override 1
         if (checkButtonPressed(joy->buttons, safety_override_button_) == true) {
-            if (safety_override_true_number_ < ITERATIONS_WRITE_MODBUS) {
+            if (safety_override_true_number_ < ITERATIONS_CALL_SAFETY_MODULE) {
                 setSafetyOverride(true);
                 safety_override_true_number_++;
             }
             safety_override_false_number_ = 0;
         } else {
-            //	if(safety_override_false_number_ < ITERATIONS_WRITE_MODBUS){
+            //	if(safety_override_false_number_ < ITERATIONS_CALL_SAFETY_MODULE){
             //		setSafetyOverride(false);
             //		safety_override_false_number_++;
             //	}
             //	safety_override_true_number_ = 0;
+        }
+        
+        if (checkButtonPressed(joy->buttons, laser_mode_button_) == true) {
+            if (!bRegisteredButtonEvent[laser_mode_button_]) 
+            {
+                bRegisteredButtonEvent[laser_mode_button_] = true;
+                loopBetweenLaserModes();
+            }
+        } else {
+            bRegisteredButtonEvent[laser_mode_button_] = false;
         }
 
         double speed_step = 0.1;
@@ -450,13 +473,14 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
 		}
     } else {
         // MANUAL RELEASE -> 0
-        if (manual_release_false_number_ < ITERATIONS_WRITE_MODBUS) {
+        if (manual_release_false_number_ < ITERATIONS_CALL_SAFETY_MODULE) {
             setManualRelease(false);
             // setSafetyOverride(false);
             manual_release_false_number_++;
         }
 
         manual_release_true_number_ = 0;
+        manual_release_false_number_ = 0;
         safety_override_false_number_ = 0;
         safety_override_true_number_ = 0;
         vel.angular.x = 0.0;
@@ -510,6 +534,21 @@ int RB2Pad::setSafetyOverride(bool value) {
     set_bool_msg.request.data = value;
     set_safety_override_client_.call(set_bool_msg);
 
+    return 0;
+}
+
+int RB2Pad::loopBetweenLaserModes() {
+
+    int next_mode = (current_laser_mode_ + 1) % laser_modes_.size();
+    
+    robotnik_msgs::SetLaserMode set_laser_msg;
+    set_laser_msg.request.mode = laser_modes_[next_mode];
+    
+    if (set_laser_mode_client_.call(set_laser_msg) == false or set_laser_msg.response.ret == false) {
+        ROS_INFO("RB2Pad: error setting laser mode = %s", set_laser_msg.request.mode.c_str());
+        return -1;
+    }
+    current_laser_mode_ = next_mode;
     return 0;
 }
 
