@@ -1,16 +1,18 @@
 <?xml version="1.0"?>
 <launch>
-        <!-- maps inside the folder rb1_base_localization/maps -->
-	<arg name="map_file" default="$(find rb2_localization)/maps/empty/map_empty.yaml"/>
-	<arg name="prefix" default="rb2_"/>
-	<arg name="frame_id" default="$(arg prefix)map"/>
-    <arg name="map_topic" default="map" />
-	<!-- Run the map server -->
-	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)">
-		<param name="frame_id" value="$(arg frame_id)"/>
-        <remap from="map" to="$(arg map_topic)" />
-        <remap from="map_metadata" to="$(arg map_topic)_metadata" />
-        <remap from="static_map" to="$(arg map_topic)_static_map" />
-	</node>
+
+  <!-- maps inside the folder rb1_base_localization/maps -->
+  <arg name="map_file" default="$(find rb2_localization)/maps/empty/map_empty.yaml"/>
+  <arg name="prefix" default="rb2_"/>
+  <arg name="frame_id" default="$(arg prefix)map"/>
+  <arg name="map_topic" default="map" />
+ 
+  <!-- Run the map server -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)">
+    <param name="frame_id" value="$(arg frame_id)"/>
+    <remap from="map" to="$(arg map_topic)" />
+    <remap from="map_metadata" to="$(arg map_topic)_metadata" />
+    <remap from="static_map" to="$(arg map_topic)_static_map" />
+  </node>
 
 </launch>
