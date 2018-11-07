@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<launch>
+ 
+  <arg name="prefix" default="rb2_"/> 
+  <arg name="cmd_vel_topic" default="move_base/cmd_vel"/> <!-- using twist mux -->
+  <arg name="odom_topic" default="robotnik_base_control/odom"/> 
+  <arg name="global_frame" default="$(arg prefix)map"/> 
+  <arg name="odom_frame" default="$(arg prefix)odom"/> 
+  <arg name="base_frame" default="$(arg prefix)base_footprint"/>
+  <arg name="scan_topic" default="front_laser/scan"/>
+  
+  <arg name="x_init_pose" default="0" />
+  <arg name="y_init_pose" default="0" />
+  <arg name="a_init_pose" default="0" />
+ 
+  <node pkg="tf" type="static_transform_publisher" name="map2odom" args="$(arg x_init_pose) $(arg y_init_pose) 0 $(arg a_init_pose) 0 0 $(arg global_frame) $(arg odom_frame) 100" /> 
+
+  <group ns="rb2" >
+      <include file="$(find rb2_localization)/launch/map_server.launch" />
+      <include file="$(find rb2_navigation)/launch/move_base.launch" >
+         <arg name="cmd_vel_topic" value="robotnik_base_control/cmd_vel"/> <!-- maybe it is better to use a relay -->
+      </include>
+      <node pkg="rb2_navigation" type="simulate_base.py" name="robotnik_base_control">
+          <param name="base_frame_id" value="$(arg base_frame)" />
+          <param name="odom_frame_id" value="$(arg odom_frame)" />
+      </node>
+  </group>
+  
+  
+</launch>
