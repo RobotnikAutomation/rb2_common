@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- TEB LOCAL PLANNER -->
+
   <arg name="id_robot" default="rb2" />
   <arg name="prefix" default="$(arg id_robot)_"/>
   <arg name="cmd_vel_topic" default="move_base/cmd_vel"/> <!-- using twist mux -->
@@ -9,21 +9,27 @@
   <arg name="odom_frame" default="$(arg prefix)odom"/>
   <arg name="base_frame" default="$(arg prefix)base_footprint"/>
   <arg name="scan_topic" default="laser/scan"/>
+  <arg name="cloud_topic" default="laser/cloud"/>
+  <arg name="map_topic" default="localization" />
+  
+  <arg name="x_init_pose" default="0" />
+  <arg name="y_init_pose" default="0" />
+  <arg name="a_init_pose" default="0" />
+  <arg name="amcl_resample" default="true" />
 
   <arg name="bag_file" />
   <arg name="map_file" />
   <arg name="play_rate" default="1" />
-  <arg name="x_init_pose" default="0" />
-  <arg name="y_init_pose" default="0" />
-  <arg name="a_init_pose" default="0" />
-  <arg name="amcl_resample" default="$(arg amcl_resample)" />
+  <arg name="play_delay" default="5" />
+  <arg name="play_start" default="0" />
 
   <param name="/use_sim_time" value="true"/>
   
-  <node pkg="rosbag" type="play" name="player" args="--clock $(arg bag_file) -r $(arg play_rate)">
+  <node pkg="rosbag" type="play" name="player" output="screen" args="$(arg bag_file) --clock --rate $(arg play_rate) --delay $(arg play_delay) --start $(arg play_start)">
      <remap from="/tf" to="/tf_dirty" />
      <remap from="/tf_static" to="/tf_static_dirty" />
   </node>
+
   <group ns="$(arg id_robot)" >
  
    <node pkg="rb2_localization" type="tf_remove_frames.py" name="tf_remove_frames" >
@@ -33,33 +39,37 @@
    </node>
    
    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)">
-      <param name="frame_id" value="$(arg global_frame)"/>
+     <param name="frame_id" value="$(arg global_frame)"/>
+     <param name="map" value="$(arg map_topic)" />
    </node>
     
-   <include file="$(find fresenius_bringup)/launch/localization/amcl.launch">
-        <arg name="x_init_pose" value="$(arg x_init_pose)" />
-        <arg name="y_init_pose" value="$(arg y_init_pose)" />
-        <arg name="a_init_pose" value="$(arg a_init_pose)" />
+   <include file="$(find rb2_localization)/launch/amcl.launch">
+     <arg name="x_init_pose" value="$(arg x_init_pose)" />
+     <arg name="y_init_pose" value="$(arg y_init_pose)" />
+     <arg name="a_init_pose" value="$(arg a_init_pose)" />
 
-        <arg name="scan_topic" value="$(arg scan_topic)"/>
-        
-        <arg name="amcl_resample" value="$(arg amcl_resample)" />
-    </include>
+     <arg name="scan_topic" value="$(arg scan_topic)"/>
+     <arg name="map_topic" value="$(arg map_topic)"/>
+     
+     <arg name="amcl_resample" value="$(arg amcl_resample)" />
+   </include>
 
+   <node pkg="tf" type="static_transform_publisher" name="base2frontlaser" args="0.355 0.213 0.298 0.785 0 0 $(arg prefix)base_footprint $(arg prefix)front_laser_link 100" />
+   <node pkg="tf" type="static_transform_publisher" name="base2rearlaser" args="-0.355 -0.213 0.298 -2.356 0 0 $(arg prefix)base_footprint $(arg prefix)rear_laser_link 100" />
+   <node pkg="tf" type="static_transform_publisher" name="base2footprint" args="0 0 0 0 0 0 $(arg prefix)base_footprint $(arg prefix)base_link 100" />
 
-    <!--node name="player" pkg="rosbag" type="play" args="$(find emart_summit_xls)/bags/test_localization.bag " /-->
+   <node pkg="ira_laser_tools" name="laser" type="laserscan_multi_merger" output="screen">
+     <param name="destination_frame" value="rb2_base_link"/>
+     <param name="cloud_destination_topic" value="cloud"/>
+     <param name="scan_destination_topic" value="scan"/>
+     <remap from="~scan" to="$(arg scan_topic)"/>
+     <remap from="~cloud" to="$(arg cloud_topic)"/>
+     <param name="laserscan_topics" value ="front_laser/scan rear_laser/scan" /> <!-- LIST OF THE LASER SCAN TOPICS TO SUBSCRIBE -->
+     <param name="angle_min" value="-3.14" />
+     <param name="angle_max" value="3.14" />
+   </node>
 
-    <node pkg="tf" type="static_transform_publisher" name="base2frontlaser" args="0.355 0.213 0.298 0.785 0 0 $(arg prefix)base_footprint $(arg prefix)front_laser_link 100" />
-    <node pkg="tf" type="static_transform_publisher" name="base2rearlaser" args="-0.355 -0.213 0.298 -2.356 0 0 $(arg prefix)base_footprint $(arg prefix)rear_laser_link 100" />
-    <node pkg="tf" type="static_transform_publisher" name="base2footprint" args="0 0 0 0 0 0 $(arg prefix)base_footprint $(arg prefix)base_link 100" />
+   <node pkg="rviz" type="rviz" name="rviz" args="-d /home/mbosch/.rviz/rb2_fresenius.rviz" />
 
-    <node pkg="ira_laser_tools" name="laserscan_multi_merger" type="laserscan_multi_merger" output="screen">
-	<param name="destination_frame" value="rb2_base_link"/>
-	<param name="cloud_destination_topic" value="/merged_cloud"/>
-	<param name="scan_destination_topic" value="/rb2/$(arg scan_topic)"/>
-        <param name="laserscan_topics" value ="front_laser/scan rear_laser/scan" /> <!-- LIST OF THE LASER SCAN TOPICS TO SUBSCRIBE -->
-    </node>
-
-    <node pkg="rviz" type="rviz" name="rviz" args="-d /home/mbosch/.rviz/rb2_fresenius.rviz" />
   </group>
 </launch>
