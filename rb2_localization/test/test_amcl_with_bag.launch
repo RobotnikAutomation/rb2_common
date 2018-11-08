@@ -38,10 +38,11 @@
      <param name="remove_frames" value="rb2_map" />
    </node>
    
-   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)">
-     <param name="frame_id" value="$(arg global_frame)"/>
-     <param name="map" value="$(arg map_topic)" />
-   </node>
+   <include file="$(find rb2_localization)/launch/map_server.launch">
+     <arg name="map_file" value="$(arg map_file)" />
+     <arg name="map_topic" value="$(arg map_topic)" />
+     <arg name="frame_id" value="$(arg global_frame)"/>
+   </include>
     
    <include file="$(find rb2_localization)/launch/amcl.launch">
      <arg name="x_init_pose" value="$(arg x_init_pose)" />
