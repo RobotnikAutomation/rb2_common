@@ -50,6 +50,7 @@ robotnik_base_control:
   cmd_watchdog_duration: 0.5
   imu_watchdog_duration: 0.1
   imu_topic: 'imu/data'
+  use_imu_for_yaw: true
   odom_publish_frequency: 100
   cmd_vel        : 'robotnik_base_control/cmd_vel'
   applied_cmd_vel : 'robotnik_base_control/applied_cmd_vel'
@@ -69,6 +70,8 @@ robotnik_base_control:
   elevator_digital_input_up: 48
   elevator_digital_input_down: 47
   reverse_logic: false # Make sure what logic is your robot using
+  motor_noise: 0.015 # in meters/sec. 0.0 to disable
+  slow_move: 0.05 # in meters/sec: if velocity is less than this, do not integrate imu orientation. 0.0 to disable
 
 joint_read_state_controller:
   type: joint_state_controller/JointStateController 
