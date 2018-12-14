@@ -76,6 +76,25 @@
   <!-- PICKING LINK -->
   <link name="${prefix}picking_contact_link" />
 
+  <!-- FRONT CONTACTS -->
+  <joint name="${prefix}front_joint" type="fixed">
+    <origin xyz="0.476 0.0 0.116" rpy="0 0 0" />
+    <parent link="${prefix}base_link"/>
+    <child link="${prefix}front_contact_link" />
+  </joint>    
+
+  <!-- FRONT LINK -->
+  <link name="${prefix}front_contact_link" />
+
+  <!-- REAR CONTACTS -->
+  <joint name="${prefix}rear_joint" type="fixed">
+    <origin xyz="-0.476 0.0 0.116" rpy="0 0 0" />
+    <parent link="${prefix}base_link"/>
+    <child link="${prefix}rear_contact_link" />
+  </joint>    
+
+  <!-- REAR LINK -->
+  <link name="${prefix}rear_contact_link" />
 
   </xacro:macro>
 </robot>
