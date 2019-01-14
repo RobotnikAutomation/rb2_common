@@ -13,10 +13,22 @@
   <arg name="y_init_pose" default="0" />
   <arg name="a_init_pose" default="0" />
  
-  <node pkg="tf" type="static_transform_publisher" name="map2odom" args="$(arg x_init_pose) $(arg y_init_pose) 0 $(arg a_init_pose) 0 0 $(arg global_frame) $(arg odom_frame) 100" /> 
+  <!--<node pkg="tf" type="static_transform_publisher" name="map2odom" args="$(arg x_init_pose) $(arg y_init_pose) 0 $(arg a_init_pose) 0 0 $(arg global_frame) $(arg odom_frame) 100" /> -->
+  <node pkg="tf" type="static_transform_publisher" name="b2l" args="0.5 0 0 0 0 0 rb2_base_footprint rb2_laser 100" /> 
 
   <group ns="rb2" >
-      <include file="$(find rb2_localization)/launch/map_server.launch" />
+      <include file="$(find rb2_localization)/launch/amcl.launch">
+         <arg name="scan_topic" value="laser/scan" />
+      </include>
+
+      <node name="light_scan_sim" pkg="light_scan_sim" type="light_scan_sim_node" output="screen">
+        <rosparam file="$(find rb2_navigation)/test/scan_sim.yaml" command="load" />
+      </node>
+
+      <include file="$(find rb2_localization)/launch/map_server.launch">
+        <arg name="map_file" value="$(find rb2_localization)/maps/robotnik/robotnik.yaml" />
+      </include>
+      
       <include file="$(find rb2_navigation)/launch/move_base.launch" >
          <arg name="cmd_vel_topic" value="robotnik_base_control/cmd_vel"/> <!-- maybe it is better to use a relay -->
       </include>

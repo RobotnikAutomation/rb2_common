@@ -15,7 +15,7 @@
   <arg name="x_init_pose" default="0" />
   <arg name="y_init_pose" default="0" />
   <arg name="a_init_pose" default="0" />
-  <arg name="amcl_resample" default="true" />
+  <arg name="amcl_resample" default="false" />
 
   <arg name="bag_file" />
   <arg name="map_file" />
@@ -53,6 +53,8 @@
      <arg name="map_topic" value="$(arg map_topic)"/>
      
      <arg name="amcl_resample" value="$(arg amcl_resample)" />
+     <!--<arg name="tf_broadcast" value="true" />-->
+     <arg name="global_frame" default="rb2_map"/> 
    </include>
 
    <node pkg="tf" type="static_transform_publisher" name="base2frontlaser" args="0.355 0.213 0.298 0.785 0 0 $(arg prefix)base_footprint $(arg prefix)front_laser_link 100" />
@@ -61,6 +63,7 @@
 
    <node pkg="ira_laser_tools" name="laser" type="laserscan_multi_merger" output="screen">
      <param name="destination_frame" value="rb2_base_link"/>
+     <param name="fixed_frame" value="rb2_odom"/>
      <param name="cloud_destination_topic" value="cloud"/>
      <param name="scan_destination_topic" value="scan"/>
      <remap from="~scan" to="$(arg scan_topic)"/>
@@ -68,6 +71,7 @@
      <param name="laserscan_topics" value ="front_laser/scan rear_laser/scan" /> <!-- LIST OF THE LASER SCAN TOPICS TO SUBSCRIBE -->
      <param name="angle_min" value="-3.14" />
      <param name="angle_max" value="3.14" />
+     <!-- param name="angle_increment" value="0.00289999996" / -->
    </node>
 
    <node pkg="rviz" type="rviz" name="rviz" args="-d /home/mbosch/.rviz/rb2_fresenius.rviz" />

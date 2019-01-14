@@ -48,6 +48,7 @@
 #include <std_srvs/SetBool.h>
 #include <robotnik_msgs/SetLaserMode.h>
 #include <unistd.h>
+#include <marker_mapping/InitPoseFromMarker.h>
 
 #define DEFAULT_NUM_OF_BUTTONS 16
 #define DEFAULT_AXIS_LINEAR_X 1
@@ -108,6 +109,8 @@ class RB2Pad {
     //! If it is True, it will check the timeout message
     bool check_message_timeout_;
     double current_vel;
+  //! Name of service where to initialize pose
+  std::string initialize_pose_service_name_;
     //! Number of the DEADMAN button
     int dead_man_button_, dead_man_unsafe_button_, safety_override_button_, laser_mode_button_;
     //! Number of the button for increase or decrease the speed max of the
@@ -119,6 +122,8 @@ class RB2Pad {
     //! button to change kinematic mode
     int button_kinematic_mode_;
     //! kinematic mode
+  //! button to initialize pose
+  int button_initialize_pose_;
     int kinematic_mode_;
     //! Service to modify the kinematic mode
     ros::ServiceClient setKinematicMode;
@@ -139,6 +144,9 @@ class RB2Pad {
     ros::ServiceClient set_elevator_client_;
     //! Service to safety module
     ros::ServiceClient set_manual_release_client_, set_safety_override_client_, set_laser_mode_client_;
+    //! Service to call pose initialization
+    ros::ServiceClient initialize_pose_client_;
+
     //! Number of buttons of the joystick
     int num_of_buttons_;
     //! Pointer to a vector for controlling the event when pushing the buttons
@@ -208,6 +216,8 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
     else
         use_axis_for_elevator = true;
 
+   nh_.param("initialize_pose", button_initialize_pose_, 4);
+
     nh_.param("cmd_service_home", cmd_home_, cmd_home_);
 
     nh_.param("check_message_timeout", check_message_timeout_,
@@ -221,6 +231,8 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
         bRegisteredButtonEvent[i] = false;
         ROS_INFO("bREG %d", i);
     }
+
+  nh_.param<std::string>("initialize_pose_service_name", initialize_pose_service_name_, "initialize_pose");
 
     // Publish through the node handle Twist type messages to the
     // guardian_controller/command topicç
@@ -264,6 +276,9 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
     laser_modes_.clear();
     nh_.param<std::vector<std::string> >("laser_modes", laser_modes_, laser_modes_);
     current_laser_mode_ = 0;
+
+ initialize_pose_client_ =
+      nh_.serviceClient<marker_mapping::InitPoseFromMarker>(initialize_pose_service_name_);
 
     bOutput1 = bOutput2 = false;
 
@@ -490,6 +505,45 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
         vel.linear.y = 0.0;
         vel.linear.z = 0.0;
     }
+
+  static bool initialized_pose = false;
+
+  if (joy->buttons[dead_man_button_] == 1)
+  {
+    if (initialized_pose == false and joy->buttons[button_initialize_pose_] == 1)
+    {
+      initialized_pose = true;
+      bool success = false;
+      marker_mapping::InitPoseFromMarker init_pose;
+      if (initialize_pose_client_.exists() == true)
+      {
+        success = initialize_pose_client_.call(init_pose);
+      }
+      else
+      {
+        success = false;
+      }
+      if (success == false) 
+      {
+        ROS_ERROR_STREAM("Pad: Cannot call to initialize pose. Service name: " << initialize_pose_client_.getService());
+      }
+      else if (init_pose.response.ret == false)
+      {
+        ROS_ERROR_STREAM("Pad: Call resulted in error. Service name: " << initialize_pose_client_.getService());
+      }
+      else
+      {
+        ROS_INFO_STREAM("Pad: initialized pose"); 
+      }
+    }
+  }
+  else
+  {
+    initialized_pose = false;
+  }
+
+
+
 
     sus_joy_freq->tick();  // Ticks the reception of joy events
 
