@@ -46,9 +46,9 @@
 #include <robotnik_msgs/set_digital_output.h>
 #include <robotnik_msgs/set_mode.h>
 #include <std_srvs/SetBool.h>
+#include <std_srvs/Trigger.h>
 #include <robotnik_msgs/SetLaserMode.h>
 #include <unistd.h>
-#include <marker_mapping/InitPoseFromMarker.h>
 
 #define DEFAULT_NUM_OF_BUTTONS 16
 #define DEFAULT_AXIS_LINEAR_X 1
@@ -278,7 +278,7 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
     current_laser_mode_ = 0;
 
  initialize_pose_client_ =
-      nh_.serviceClient<marker_mapping::InitPoseFromMarker>(initialize_pose_service_name_);
+      nh_.serviceClient<std_srvs::Trigger>(initialize_pose_service_name_);
 
     bOutput1 = bOutput2 = false;
 
@@ -514,7 +514,7 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
     {
       initialized_pose = true;
       bool success = false;
-      marker_mapping::InitPoseFromMarker init_pose;
+      std_srvs::Trigger init_pose;
       if (initialize_pose_client_.exists() == true)
       {
         success = initialize_pose_client_.call(init_pose);
@@ -527,9 +527,9 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
       {
         ROS_ERROR_STREAM("Pad: Cannot call to initialize pose. Service name: " << initialize_pose_client_.getService());
       }
-      else if (init_pose.response.ret == false)
+      else if (init_pose.response.success == false)
       {
-        ROS_ERROR_STREAM("Pad: Call resulted in error. Service name: " << initialize_pose_client_.getService());
+        ROS_ERROR_STREAM("Pad: Call resulted in error: " << init_pose.response.message << ". Service name: " << initialize_pose_client_.getService());
       }
       else
       {
