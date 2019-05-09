@@ -18,7 +18,8 @@
   <url type="bugtracker">https://github.com/RobotnikAutomation/rb2_common/issues</url>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <exec_depend>robotnik_base_hw_sim</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>twist_mux</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
