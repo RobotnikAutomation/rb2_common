@@ -367,10 +367,10 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
         manual_release_false_number_ = 0;
         // MANUAL RELEASE -> 1
         // write the signal X number of times
-        if (manual_release_true_number_ < ITERATIONS_CALL_SAFETY_MODULE) {
-            setManualRelease(true);
-            manual_release_true_number_++;
-        }
+        // if (manual_release_true_number_ < ITERATIONS_CALL_SAFETY_MODULE) {
+        //     setManualRelease(true);
+        //     manual_release_true_number_++;
+        // }
 
         // L1 pressed -> Safety override 1
         if (checkButtonPressed(joy->buttons, safety_override_button_) == true) {
@@ -488,11 +488,11 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
 		}
     } else {
         // MANUAL RELEASE -> 0
-        if (manual_release_false_number_ < ITERATIONS_CALL_SAFETY_MODULE) {
-            setManualRelease(false);
-            // setSafetyOverride(false);
-            manual_release_false_number_++;
-        }
+        // if (manual_release_false_number_ < ITERATIONS_CALL_SAFETY_MODULE) {
+        //     setManualRelease(false);
+        //     // setSafetyOverride(false);
+        //     manual_release_false_number_++;
+        // }
 
         manual_release_true_number_ = 0;
         manual_release_false_number_ = 0;
