@@ -3,32 +3,32 @@
 
   <arg name="sim" default="false"/>
   <arg name="cmd_vel" default="robotnik_base_control/cmd_vel"/>
-  <arg name="prefix" default="rb2_"/>
-  <arg name="id_robot" default="rb2"/>
+  <arg name="prefix" default="robot_"/>
+  <arg name="id_robot" default="robot"/>
   <arg name="launch_robot_localization" default="false"/>
   <arg name="has_elevator" default="false"/>
-  
+
   <!-- Robot - Load joint controller configurations from YAML file to parameter server -->
-  <group unless="$(arg sim)">	
+  <group unless="$(arg sim)">
 	<!-- Load joint controller configurations from YAML file to parameter server -->
 	<rosparam file="$(find rb2_control)/config/rb2_control.yaml" command="load"/>
 	<param name="robotnik_base_control/left_wheel" value="$(arg prefix)left_wheel_joint"/>
 	<param name="robotnik_base_control/right_wheel" value="$(arg prefix)right_wheel_joint"/>
 	<param name="robotnik_base_control/base_frame_id" value="$(arg prefix)base_footprint"/>
 	<param name="robotnik_base_control/odom_frame_id" value="$(arg prefix)odom"/>
-	
+
 	<!-- load the controllers -->
 	<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
 		output="screen" args="
 						  robotnik_base_control
-						  joint_read_state_controller 
+						  joint_read_state_controller
 						  --shutdown-timeout 1
 						  ">
 	</node>
   </group>
 
 	<!-- Simulation - Load joint controller configurations from YAML file to parameter server -->
-  <group if="$(arg sim)">	
+  <group if="$(arg sim)">
 
 	<!-- Load joint controller configurations from YAML file to parameter server -->
 	<rosparam file="$(find rb2_control)/config/rb2_diffdrive_control.yaml" command="load"/>
@@ -41,8 +41,8 @@
 	<param name="robotnik_elevator_controller/joint/elevator_joint/name" value="$(arg prefix)elevator_platform_joint"/>
 	<!-- if robot_localization node is launched the controller must not publish the odom tf-->
 	<!--param if="$(arg launch_robot_localization)" name="robotnik_base_control/enable_odom_tf" value="false"/-->
-	
-	
+
+
 	<!-- load the controllers -->
 	<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
 		output="screen" args="
@@ -59,5 +59,5 @@
     <rosparam command="load" file="$(find rb2_control)/config/twist_mux.yaml" />
     <remap from="cmd_vel_out" to="robotnik_base_control/cmd_vel" />
   </node>
-  
+
 </launch>

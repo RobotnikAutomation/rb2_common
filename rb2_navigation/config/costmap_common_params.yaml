@@ -8,7 +8,6 @@ footprint: [[0.5, -0.3],[0.5, 0.3],[-0.5, 0.3],[-0.5, -0.3]] # omni wheel rectan
 
 obstacle_layer:
   observation_sources:  front_laser rear_laser
-  front_laser: {sensor_frame: rb2_front_laser_link, data_type: LaserScan, topic: front_laser/scan, marking: true, clearing: true, observation_persistence: 1.0}
-  rear_laser: {sensor_frame: rb2_rear_laser_link, data_type: LaserScan, topic: rear_laser/scan, marking: true, clearing: true, observation_persistence: 1.0}
+  front_laser: {sensor_frame: robot_front_laser_link, data_type: LaserScan, topic: front_laser/scan, marking: true, clearing: true, observation_persistence: 1.0}
+  rear_laser: {sensor_frame: robot_rear_laser_link, data_type: LaserScan, topic: rear_laser/scan, marking: true, clearing: true, observation_persistence: 1.0}
   front_camera: {data_type: PointCloud2, topic: front_rgbd_camera/depth/points, marking: true, clearing: true, observation_persistence: 1.0, min_obstacle_height: 0.1}
-

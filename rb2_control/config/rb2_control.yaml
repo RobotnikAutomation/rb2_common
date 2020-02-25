@@ -1,21 +1,21 @@
 joint_blw_velocity_controller:
   type: velocity_controllers/JointVelocityController
-  joint: rb2_left_wheel_joing
+  joint: robot_left_wheel_joint
 joint_brw_velocity_controller:
   type: velocity_controllers/JointVelocityController
-  joint: rb2_right_wheel_joint
+  joint: robot_right_wheel_joint
 
 robotnik_base_control:
   type: rb2_controller/RB2Controller
   joint:
     right_wheel_joint:
-        name: rb2_right_wheel_joint
+        name: robot_right_wheel_joint
         max_speed: 27.27 # rad/s
     left_wheel_joint:
-        name: rb2_left_wheel_joint
-        max_speed: 27.27 # rad/s    
+        name: robot_left_wheel_joint
+        max_speed: 27.27 # rad/s
     elevator_joint:
-        name: rb2_elevator_platform_joint
+        name: robot_elevator_platform_joint
   limits:
     elevator_down:
       linear_speed_limit: 1.5 # m/s
@@ -32,8 +32,8 @@ robotnik_base_control:
       angular_acceleration_limit: 1.0 # 3.0 for same as elevator_down # rad/s^2
       angular_deceleration_limit: 2.0 # 3.0 for same as elevator_down # rad/s^2
     # TODO: still not implemented!
-    # how to deccelerate in case of hard_brake. 
-    hard_brake: 
+    # how to deccelerate in case of hard_brake.
+    hard_brake:
       linear_speed_limit: 1.5 # m/s
       linear_acceleration_limit: 1.5 # m/s^2
       linear_deceleration_limit: 4 # m/s^2
@@ -41,8 +41,8 @@ robotnik_base_control:
       angular_acceleration_limit: 3.0 # rad/s^2
       angular_deceleration_limit: 6.0 # rad/s^2
   hard_brake: false
-  odom_frame: rb2_odom
-  robot_base_frame: rb2_base_footprint
+  odom_frame: robot_odom
+  robot_base_frame: robot_base_footprint
   odom_broadcast_tf: true
   odom_topic: 'robotnik_base_control/odom'
   track_width: 0.46
@@ -66,7 +66,7 @@ robotnik_base_control:
   elevator_position_up: 0.05 # linear height (m)
   elevator_position_down: 0.0
   elevator_digital_output_up: 5
-  elevator_digital_output_down: 6 
+  elevator_digital_output_down: 6
   elevator_digital_input_up: 48
   elevator_digital_input_down: 47
   reverse_logic: false # Make sure what logic is your robot using
@@ -74,8 +74,5 @@ robotnik_base_control:
   slow_move: 0.05 # in meters/sec: if velocity is less than this, do not integrate imu orientation. 0.0 to disable
 
 joint_read_state_controller:
-  type: joint_state_controller/JointStateController 
+  type: joint_state_controller/JointStateController
   publish_rate: 100.0
-
-
-

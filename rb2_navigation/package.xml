@@ -23,5 +23,7 @@
 
   <depend>move_base</depend>
   <depend>teb_local_planner</depend>
-  
+  <exec_depend>rb2_localization</exec_depend>
+  <exec_depend>eband_local_planner</exec_depend>
+
 </package>

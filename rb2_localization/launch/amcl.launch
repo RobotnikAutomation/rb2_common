@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="id_robot" default="$(optenv ROBOT_ID rb2)"/>
+  <arg name="id_robot" default="$(optenv ROBOT_ID robot)"/>
   <arg name="prefix" default="$(arg id_robot)_"/>
 
   <arg name="x_init_pose" default="0"/>
@@ -10,11 +10,11 @@
   <arg name="a_init_pose" default="0"/>
   <arg name="scan_topic" default="front_laser/scan"/>
   <arg name="map_topic" default="map"/>
-  <arg name="global_frame" default="$(arg prefix)map"/> 
-  <arg name="odom_frame" default="$(arg prefix)odom"/> 
+  <arg name="global_frame" default="$(arg prefix)map"/>
+  <arg name="odom_frame" default="$(arg prefix)odom"/>
   <arg name="base_frame" default="$(arg prefix)base_footprint"/>
   <arg name="odom_model_type" default="diff"/> <!-- omni -->
- 
+
   <arg name="amcl_resample" default="true" />
   <node if="$(arg amcl_resample)" pkg="rb2_localization" type="amcl_resample.py" name="amcl_resample" />
 
@@ -22,7 +22,7 @@
     <remap from="scan" to="$(arg scan_topic)"/>
     <remap from="map" to="$(arg map_topic)"/>
     <param name="use_map_topic" value="true"/>
-  
+
     <!-- Publish scans from best pose at a max of 10 Hz -->
     <param name="odom_model_type" value="$(arg odom_model_type)"/>
     <param name="transform_tolerance" value="0.2" />
@@ -34,7 +34,7 @@
     <param name="kld_z" value="0.99"/>
     <!-- translation std dev, m -->
     <param name="odom_alpha1" value="0.2"/>
-    <param name="odom_alpha2" value="0.2"/> 
+    <param name="odom_alpha2" value="0.2"/>
     <param name="odom_alpha3" value="0.8"/>
     <param name="odom_alpha4" value="0.2"/>
     <param name="odom_alpha5" value="0.1"/>
@@ -46,7 +46,7 @@
     <param name="laser_lambda_short" value="0.1"/>
     <param name="laser_lambda_short" value="0.1"/>
     <param name="laser_model_type" value="likelihood_field"/>
-    
+
     <!-- <param name="laser_model_type" value="beam"/> -->
     <param name="laser_likelihood_max_dist" value="2.0"/>
     <param name="update_min_d" value="0.2"/>
