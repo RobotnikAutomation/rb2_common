@@ -235,13 +235,13 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
   nh_.param<std::string>("initialize_pose_service_name", initialize_pose_service_name_, "initialize_pose");
 
     // Publish through the node handle Twist type messages to the
-    // guardian_controller/command topicç
-    if (cmd_topic_unsafe_vel_ == "") {
+    // guardian_controller/command topic
+    /*if (cmd_topic_unsafe_vel_ == "") {
         ROS_ERROR(
             "RB2Pad: cmd_topic_vel is empty, so things are going to be crazy");
-    }
+    }*/
     vel_pub_ = nh_.advertise<geometry_msgs::Twist>(cmd_topic_vel_, 1);
-    if (cmd_topic_unsafe_vel_ != "" and dead_man_unsafe_button_ != -1) {
+    /*if (cmd_topic_unsafe_vel_ != "" and dead_man_unsafe_button_ != -1) {
         ROS_WARN(
             "RB2Pad: We have an unsafe cmd vel in topic \"%s\". Be aware of it "
             "(press button %d for it)",
@@ -254,7 +254,7 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
             "RB2Pad: We do not have an unsafe cmd_vel (button %d, topic %s)",
             dead_man_unsafe_button_, cmd_topic_unsafe_vel_.c_str());
         has_unsafe_vel_ = false;
-    }
+    }*/
 
     // Listen through the node handle sensor_msgs::Joy messages from joystick
     // (these are the references that we will sent to cmd_vel)

@@ -1,10 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(rb2_control)
+project(rb2_robot_local_control)
 
-find_package(catkin REQUIRED COMPONENTS
-   twist_mux
-   controller_manager
-)
+find_package(catkin REQUIRED COMPONENTS)
 
 catkin_package()
 

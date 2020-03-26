@@ -4,7 +4,8 @@
   <version>0.0.0</version>
   <description>The rb2_control package</description>
 
- <maintainer email="asoriano@robotnik.es">Angel Soriano</maintainer>
+  <maintainer email="jgomez@robotnik.es">Jose Gómez</maintainer>
+  <maintainer email="asoriano@robotnik.es">Angel Soriano</maintainer>
   <maintainer email="avillena@robotnik.es">Álvaro Villena</maintainer>
   <maintainer email="dredo@robotnik.es">David Redó</maintainer>
   <maintainer email="aarnal@robotnik.es">Alejandro Arnal</maintainer>
@@ -18,14 +19,10 @@
   <url type="bugtracker">https://github.com/RobotnikAutomation/rb2_common/issues</url>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <exec_depend>controller_manager</exec_depend>
+
   <exec_depend>twist_mux</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
   <exec_depend>diff_drive_controller</exec_depend>
   <exec_depend>joint_state_controller</exec_depend>
 
-  <!-- The export tag contains other, unspecified, tags -->
-  <export>
-    <!-- Other tools can request additional information be placed here -->
-
-  </export>
 </package>
