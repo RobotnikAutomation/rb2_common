@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="id_robot" default="rb2" />
+  <arg name="id_robot" default="robot" />
   <arg name="prefix" default="$(arg id_robot)_"/>
   <arg name="cmd_vel_topic" default="move_base/cmd_vel"/> <!-- using twist mux -->
   <arg name="odom_topic" default="robotnik_base_control/odom"/>
@@ -35,7 +35,7 @@
    <node pkg="rb2_localization" type="tf_remove_frames.py" name="tf_remove_frames" >
      <remap from="/tf_in" to="/tf_dirty" />
      <remap from="/tf_out" to="/tf" />
-     <param name="remove_frames" value="rb2_map" />
+     <param name="remove_frames" value="robot_map" />
    </node>
    
    <include file="$(find rb2_localization)/launch/map_server.launch">
@@ -54,7 +54,7 @@
      
      <arg name="amcl_resample" value="$(arg amcl_resample)" />
      <!--<arg name="tf_broadcast" value="true" />-->
-     <arg name="global_frame" default="rb2_map"/> 
+     <arg name="global_frame" default="robot_map"/> 
    </include>
 
    <node pkg="tf" type="static_transform_publisher" name="base2frontlaser" args="0.355 0.213 0.298 0.785 0 0 $(arg prefix)base_footprint $(arg prefix)front_laser_link 100" />
@@ -62,8 +62,8 @@
    <node pkg="tf" type="static_transform_publisher" name="base2footprint" args="0 0 0 0 0 0 $(arg prefix)base_footprint $(arg prefix)base_link 100" />
 
    <node pkg="ira_laser_tools" name="laser" type="laserscan_multi_merger" output="screen">
-     <param name="destination_frame" value="rb2_base_link"/>
-     <param name="fixed_frame" value="rb2_odom"/>
+     <param name="destination_frame" value="robot_base_link"/>
+     <param name="fixed_frame" value="robot_odom"/>
      <param name="cloud_destination_topic" value="cloud"/>
      <param name="scan_destination_topic" value="scan"/>
      <remap from="~scan" to="$(arg scan_topic)"/>

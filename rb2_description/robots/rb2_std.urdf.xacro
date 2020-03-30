@@ -60,7 +60,7 @@
 	<!-- RB-2 base -->
 	<xacro:rb2 prefix="$(arg prefix)" publish_bf="true" hq="${hq}" />
   	
-	<xacro:arg name="prefix" default="rb2_"/>
+	<xacro:arg name="prefix" default="robot_"/>
 
 	<!-- Gazebo ros control pluggins -->
 	<xacro:ros_control/>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
  
-  <arg name="prefix" default="rb2_"/> 
+  <arg name="prefix" default="robot_"/> 
   <arg name="cmd_vel_topic" default="move_base/cmd_vel"/> <!-- using twist mux -->
   <arg name="odom_topic" default="robotnik_base_control/odom"/> 
   <arg name="global_frame" default="$(arg prefix)map"/> 
@@ -14,7 +14,7 @@
   <arg name="a_init_pose" default="0" />
  
   <!--<node pkg="tf" type="static_transform_publisher" name="map2odom" args="$(arg x_init_pose) $(arg y_init_pose) 0 $(arg a_init_pose) 0 0 $(arg global_frame) $(arg odom_frame) 100" /> -->
-  <node pkg="tf" type="static_transform_publisher" name="b2l" args="0.5 0 0 0 0 0 rb2_base_footprint rb2_laser 100" /> 
+  <node pkg="tf" type="static_transform_publisher" name="b2l" args="0.5 0 0 0 0 0 robot_base_footprint robot_laser 100" /> 
 
   <group ns="rb2" >
       <include file="$(find rb2_localization)/launch/amcl.launch">
