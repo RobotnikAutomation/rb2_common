@@ -3,10 +3,7 @@
 <!-- rb2_docking -->
 
 	<arg name="id_robot" default="robot"/>
-	<arg name="prefix" value="$(arg id_robot)_"/>
-
-	<arg name="docking_qr" default="true"/>
-	<arg name="docking_laser_reflectors" default="false"/>
+	<arg name="prefix" default="$(arg id_robot)_"/>
 
 	<!-- Docking frames -->
 	<arg name="fixed_frame" default="$(arg prefix)odom"/>
