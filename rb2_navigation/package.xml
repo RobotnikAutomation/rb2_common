@@ -4,6 +4,7 @@
   <version>0.0.0</version>
   <description>The rb2_navigation package</description>
 
+  <maintainer email="jgomez@robotnik.es">José Gómez</maintainer>
   <maintainer email="asoriano@robotnik.es">Angel Soriano</maintainer>
   <maintainer email="avillena@robotnik.es">Álvaro Villena</maintainer>
   <maintainer email="dredo@robotnik.es">David Redó</maintainer>
@@ -17,13 +18,18 @@
   <url type="repository">https://github.com/RobotnikAutomation/rb2_common.git</url>
   <url type="bugtracker">https://github.com/RobotnikAutomation/rb2_common/issues</url>
 
-
+  <author>Robotnik</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>move_base</depend>
-  <depend>teb_local_planner</depend>
-  <exec_depend>rb2_localization</exec_depend>
-  <exec_depend>eband_local_planner</exec_depend>
+  <build_depend>move_base</build_depend>
+  <build_depend>teb_local_planner</build_depend>
+  <build_depend>costmap_prohibition_layer</build_depend>
+
+  <exec_depend>move_base</exec_depend>
+  <exec_depend>teb_local_planner</exec_depend>
+  <exec_depend>costmap_prohibition_layer</exec_depend>
+  <exec_depend>laser_filters</exec_depend>
+  <exec_depend>pointcloud_to_laserscan</exec_depend>
 
 </package>
