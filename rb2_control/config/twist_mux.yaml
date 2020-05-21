@@ -23,6 +23,10 @@ topics:
   topic   : charge_docker/cmd_vel
   timeout : 0.5
   priority: 2
+- name    : docker
+  topic   : docker/cmd_vel
+  timeout : 0.5
+  priority: 2
 - name    : external
   topic   : cmd_vel
   timeout : 0.5
