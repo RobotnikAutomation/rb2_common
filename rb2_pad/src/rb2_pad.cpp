@@ -380,11 +380,11 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
             }
             safety_override_false_number_ = 0;
         } else {
-            //	if(safety_override_false_number_ < ITERATIONS_CALL_SAFETY_MODULE){
-            //		setSafetyOverride(false);
-            //		safety_override_false_number_++;
-            //	}
-            //	safety_override_true_number_ = 0;
+            	if(safety_override_false_number_ < ITERATIONS_CALL_SAFETY_MODULE){
+            		setSafetyOverride(false);
+            		safety_override_false_number_++;
+            	}
+            	safety_override_true_number_ = 0;
         }
         
         if (checkButtonPressed(joy->buttons, laser_mode_button_) == true) {

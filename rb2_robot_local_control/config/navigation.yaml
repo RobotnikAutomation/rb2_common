@@ -24,7 +24,7 @@ GoToComponent:
   global_frame: robot_map
   base_frame: robot_base_footprint
   default_yaw_tolerance: 0.1 # when goal has orientation. if orientation is invalid, goal tolerance is changed to 3.14
-  has_safety_laser: false
+  has_safety_laser: true
   yaw_tolerance: 0.1
   xy_tolerance: 0.15
   preemptable: false
@@ -45,9 +45,9 @@ ChargeComponent:
   generic_dock_frame: robot_docking_station_([0-9]+)
   laser_mode_at_begining: docking_station
   robot_dock_frame: robot_base_footprint
-  dock_offset_x: -0.45 # 0.25 robot radius + 0.25 docking station reflector to contacts - 0.05 to mimic previous working config
+  dock_offset_x: -0.6 # 0.25 robot radius + 0.25 docking station reflector to contacts - 0.05 to mimic previous working config
   move_namespace: move
-  step_in_distance: 0.06 # Indicates the distance that the robot is going to move in x-axis after the docking. If 0.0 then no move action is done
+  step_in_distance: 0.21 # Indicates the distance that the robot is going to move in x-axis after the docking. If 0.0 then no move action is done
   set_laser_to_standby: false # If 'true' then the lasers will be in standby after the docking
   move:
     max_velocity:
@@ -56,14 +56,14 @@ ChargeComponent:
       angular_z: 0.1
   dock:
     max_velocity:
-      linear_x: 0.1
-      linear_y: 0.1
-      angular_z: 0.1
+      linear_x: 0.08
+      linear_y: 0.08
+      angular_z: 0.08
 
 UnchargeComponent:
   type: robot_local_control_procedures/Uncharge
   desired_freq: 5.0
-  has_laser_safety: false # determines if the robot has safety_lasers and the safety zone must be changed
+  has_laser_safety: true # determines if the robot has safety_lasers and the safety zone must be changed
   move_namespace: move
   laser_mode_at_finish: standard
   step_back_distance: 0.35 # Indicates the distance that the robot is going to move backwards. If 0.0 then no rotation action is done
@@ -77,7 +77,7 @@ UnchargeComponent:
 PickComponent:
   type: robot_local_control_procedures/Pick
   desired_freq: 1.0
-  has_laser_safety: false
+  has_laser_safety: true
   step_in_distance: 0.0
   dock_offset_x: 0.0
   dock_frame: robot_cart
@@ -98,7 +98,7 @@ PickComponent:
 PlaceComponent:
   type: robot_local_control_procedures/Place
   desired_freq: 1.0
-  has_laser_safety: false
+  has_laser_safety: true
   step_out_distance: 0.0
   move_namespace: move
   move_state_topic: move/state
