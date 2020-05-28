@@ -16,7 +16,7 @@
 
   <rosparam command="load" file="$(find rb2_pad)/config/$(arg pad_model).yaml" />
   
-  <node name="rb2_pad" pkg="rb2_pad" type="rb2_pad" output="screen"/>
+  <node name="rb2_pad" pkg="rb2_pad" type="rb2_pad" output="screen" respawn="true"/>
    
 </launch>
 
