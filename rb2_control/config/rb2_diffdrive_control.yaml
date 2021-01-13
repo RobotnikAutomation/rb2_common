@@ -30,7 +30,8 @@
     # diff_drive_controller will attempt to read either one or both from the
     # URDF if not specified as a parameter
     wheel_separation : 0.513
-    wheel_radius : 0.110
+    # wheel_radius : 0.110
+    wheel_radius : 0.090
     
     # Wheel separation and radius multipliers
     wheel_separation_multiplier: 1.0 # default: 1.0
