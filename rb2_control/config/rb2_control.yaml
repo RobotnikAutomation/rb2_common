@@ -45,7 +45,7 @@ robotnik_base_control:
   robot_base_frame: rb2_base_footprint
   odom_broadcast_tf: true
   odom_topic: 'robotnik_base_control/odom'
-  track_width: 0.46
+  track_width: 0.56
   # wheel_diameter: 0.220
   wheel_diameter: 0.180
   cmd_watchdog_duration: 0.5
