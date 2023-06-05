@@ -46,9 +46,9 @@
 #include <robotnik_msgs/set_digital_output.h>
 #include <robotnik_msgs/set_mode.h>
 #include <std_srvs/SetBool.h>
+#include <std_srvs/Trigger.h>
 #include <robotnik_msgs/SetLaserMode.h>
 #include <unistd.h>
-#include <marker_mapping/InitPoseFromMarker.h>
 
 #define DEFAULT_NUM_OF_BUTTONS 16
 #define DEFAULT_AXIS_LINEAR_X 1
@@ -71,12 +71,13 @@
 //! 								       //
 //!//////////////////////////////////////////////////////////////////////
 
-class RB2Pad {
-   public:
+class RB2Pad
+{
+public:
     RB2Pad();
     void Update();
 
-   private:
+private:
     bool checkButtonPressed(const std::vector<int> &buttons, const int number);
     void padCallback(const sensor_msgs::Joy::ConstPtr &joy);
     bool EnableDisablePad(rb2_pad::enable_disable_pad::Request &req,
@@ -91,6 +92,7 @@ class RB2Pad {
         safety_override_false_number_, safety_override_true_number_;
     int linear_x_, linear_y_, linear_z_, angular_;
     double l_scale_, a_scale_, l_scale_z_;
+    bool enable_charge_activated_, enable_charge_deactivated_;
     //! It will publish into command velocity (for the robot)
     ros::Publisher vel_pub_;
     //! It will publish into command velocity (for the robot)
@@ -109,8 +111,8 @@ class RB2Pad {
     //! If it is True, it will check the timeout message
     bool check_message_timeout_;
     double current_vel;
-  //! Name of service where to initialize pose
-  std::string initialize_pose_service_name_;
+    //! Name of service where to initialize pose
+    std::string initialize_pose_service_name_;
     //! Number of the DEADMAN button
     int dead_man_button_, dead_man_unsafe_button_, safety_override_button_, laser_mode_button_;
     //! Number of the button for increase or decrease the speed max of the
@@ -122,8 +124,8 @@ class RB2Pad {
     //! button to change kinematic mode
     int button_kinematic_mode_;
     //! kinematic mode
-  //! button to initialize pose
-  int button_initialize_pose_;
+    //! button to initialize pose
+    int button_initialize_pose_;
     int kinematic_mode_;
     //! Service to modify the kinematic mode
     ros::ServiceClient setKinematicMode;
@@ -143,7 +145,7 @@ class RB2Pad {
     //! Service to activate the elevator
     ros::ServiceClient set_elevator_client_;
     //! Service to safety module
-    ros::ServiceClient set_manual_release_client_, set_safety_override_client_, set_laser_mode_client_;
+    ros::ServiceClient set_manual_release_client_, set_safety_override_client_, set_laser_mode_client_, enable_charge_client_;
     //! Service to call pose initialization
     ros::ServiceClient initialize_pose_client_;
 
@@ -161,9 +163,9 @@ class RB2Pad {
     //! General status diagnostic updater
     diagnostic_updater::Updater updater_pad;
     //! Diagnostics min freq
-    double min_freq_command, min_freq_joy;  //
+    double min_freq_command, min_freq_joy; //
     //! Diagnostics max freq
-    double max_freq_command, max_freq_joy;  //
+    double max_freq_command, max_freq_joy; //
     //! Flag to enable/disable the communication with the publishers topics
     // bool bEnable;
     //! Client of the sound play service
@@ -175,7 +177,8 @@ class RB2Pad {
     int current_laser_mode_;
 };
 
-RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
+RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3)
+{
     current_vel = 0.1;
     //
     nh_.param("num_of_buttons", num_of_buttons_, DEFAULT_NUM_OF_BUTTONS);
@@ -192,31 +195,31 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
     nh_.param("cmd_topic_unsafe_vel", cmd_topic_unsafe_vel_, cmd_topic_vel_);
     nh_.param("button_dead_man", dead_man_button_, dead_man_button_);
     nh_.param("button_dead_man_unsafe", dead_man_unsafe_button_,
-              -1);  // NOT SET BY DEFAULT
+              -1); // NOT SET BY DEFAULT
     nh_.param("button_safety_override", safety_override_button_,
               safety_override_button_);
     nh_.param("button_laser_mode", laser_mode_button_,
               laser_mode_button_);
     nh_.param("button_speed_up", speed_up_button_,
-              speed_up_button_);  // 4 Thrustmaster
+              speed_up_button_); // 4 Thrustmaster
     nh_.param("button_speed_down", speed_down_button_,
-              speed_down_button_);  // 5 Thrustmaster
+              speed_down_button_); // 5 Thrustmaster
 
     // DIGITAL OUTPUTS CONF
     nh_.param("cmd_service_io", cmd_service_io_, cmd_service_io_);
-   // PANTILT CONF
+    // PANTILT CONF
     nh_.param("button_home", button_home_, button_home_);
     nh_.param("button_lower_elevator", button_lower_elevator_, 6);
     nh_.param("button_raise_elevator", button_raise_elevator_, 4);
     nh_.param("button_stop_elevator", button_stop_elevator_, 16);
 
     nh_.param("axis_elevator", axis_elevator_, 1);
-    if(axis_elevator_ < 0)
+    if (axis_elevator_ < 0)
         use_axis_for_elevator = false;
     else
         use_axis_for_elevator = true;
 
-   nh_.param("initialize_pose", button_initialize_pose_, 4);
+    nh_.param("initialize_pose", button_initialize_pose_, 4);
 
     nh_.param("cmd_service_home", cmd_home_, cmd_home_);
 
@@ -227,21 +230,24 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
                            "set_elevator");
 
     ROS_INFO("RB2Pad num_of_buttons_ = %d", num_of_buttons_);
-    for (int i = 0; i < num_of_buttons_; i++) {
+    for (int i = 0; i < num_of_buttons_; i++)
+    {
         bRegisteredButtonEvent[i] = false;
         ROS_INFO("bREG %d", i);
     }
 
-  nh_.param<std::string>("initialize_pose_service_name", initialize_pose_service_name_, "initialize_pose");
+    nh_.param<std::string>("initialize_pose_service_name", initialize_pose_service_name_, "initialize_pose");
 
     // Publish through the node handle Twist type messages to the
     // guardian_controller/command topicç
-    if (cmd_topic_unsafe_vel_ == "") {
+    if (cmd_topic_unsafe_vel_ == "")
+    {
         ROS_ERROR(
             "RB2Pad: cmd_topic_vel is empty, so things are going to be crazy");
     }
     vel_pub_ = nh_.advertise<geometry_msgs::Twist>(cmd_topic_vel_, 1);
-    if (cmd_topic_unsafe_vel_ != "" and dead_man_unsafe_button_ != -1) {
+    if (cmd_topic_unsafe_vel_ != "" and dead_man_unsafe_button_ != -1)
+    {
         ROS_WARN(
             "RB2Pad: We have an unsafe cmd vel in topic \"%s\". Be aware of it "
             "(press button %d for it)",
@@ -249,7 +255,9 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
         unsafe_vel_pub_ =
             nh_.advertise<geometry_msgs::Twist>(cmd_topic_unsafe_vel_, 1);
         has_unsafe_vel_ = true;
-    } else {
+    }
+    else
+    {
         ROS_WARN(
             "RB2Pad: We do not have an unsafe cmd_vel (button %d, topic %s)",
             dead_man_unsafe_button_, cmd_topic_unsafe_vel_.c_str());
@@ -272,13 +280,18 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
         "safety_module/set_safety_override");
     set_laser_mode_client_ = nh_.serviceClient<robotnik_msgs::SetLaserMode>(
         "safety_module/set_laser_mode");
+    enable_charge_client_ =
+        nh_.serviceClient<std_srvs::SetBool>("safety_module/enable_charge");
+
+    enable_charge_deactivated_ = false;
+    enable_charge_activated_ = false;
 
     laser_modes_.clear();
     nh_.param<std::vector<std::string> >("laser_modes", laser_modes_, laser_modes_);
     current_laser_mode_ = 0;
 
- initialize_pose_client_ =
-      nh_.serviceClient<marker_mapping::InitPoseFromMarker>(initialize_pose_service_name_);
+    initialize_pose_client_ =
+        nh_.serviceClient<std_srvs::Trigger>(initialize_pose_service_name_);
 
     bOutput1 = bOutput2 = false;
 
@@ -296,8 +309,7 @@ RB2Pad::RB2Pad() : linear_x_(1), linear_y_(0), angular_(2), linear_z_(3) {
     min_freq_command = min_freq_joy = 5.0;
     max_freq_command = max_freq_joy = 50.0;
     sus_joy_freq = new diagnostic_updater::HeaderlessTopicDiagnostic(
-        "/joy", updater_pad, diagnostic_updater::FrequencyStatusParam(
-                                 &min_freq_joy, &max_freq_joy, 0.1, 10));
+        "/joy", updater_pad, diagnostic_updater::FrequencyStatusParam(&min_freq_joy, &max_freq_joy, 0.1, 10));
 
     pub_command_freq = new diagnostic_updater::HeaderlessTopicDiagnostic(
         cmd_topic_vel_.c_str(), updater_pad,
@@ -332,8 +344,10 @@ rb2_pad::enable_disable_pad::Response &res )
 }
 */
 bool RB2Pad::checkButtonPressed(const std::vector<int> &buttons,
-                                const int number) {
-    if (number < 0 or number > buttons.size()) {
+                                const int number)
+{
+    if (number < 0 or number > buttons.size())
+    {
         ROS_WARN_THROTTLE(
             2,
             "RB2Pad::checkButtonPressed: You are pressing a disabled button");
@@ -342,7 +356,8 @@ bool RB2Pad::checkButtonPressed(const std::vector<int> &buttons,
     return buttons[number] == true;
 }
 
-void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
+void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy)
+{
     geometry_msgs::Twist vel;
     static int send_iterations_after_dead_man = 0;
 
@@ -359,7 +374,8 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
     vel.linear.z = 0.0;
 
     // Actions dependant on dead-man button
-    if (checkButtonPressed(joy->buttons, dead_man_button_) == true) {
+    if (checkButtonPressed(joy->buttons, dead_man_button_) == true)
+    {
         // ROS_ERROR("RB2Pad::padCallback: DEADMAN button %d",
         // dead_man_button_);
         // Set the current velocity level
@@ -367,45 +383,86 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
         manual_release_false_number_ = 0;
         // MANUAL RELEASE -> 1
         // write the signal X number of times
-        if (manual_release_true_number_ < ITERATIONS_CALL_SAFETY_MODULE) {
+        if (manual_release_true_number_ < ITERATIONS_CALL_SAFETY_MODULE)
+        {
             setManualRelease(true);
             manual_release_true_number_++;
         }
 
         // L1 pressed -> Safety override 1
-        if (checkButtonPressed(joy->buttons, safety_override_button_) == true) {
-            if (safety_override_true_number_ < ITERATIONS_CALL_SAFETY_MODULE) {
+        if (checkButtonPressed(joy->buttons, safety_override_button_) == true)
+        {
+            if (safety_override_true_number_ < ITERATIONS_CALL_SAFETY_MODULE)
+            {
                 setSafetyOverride(true);
                 safety_override_true_number_++;
             }
             safety_override_false_number_ = 0;
-        } else {
+        }
+        else
+        {
             //	if(safety_override_false_number_ < ITERATIONS_CALL_SAFETY_MODULE){
             //		setSafetyOverride(false);
             //		safety_override_false_number_++;
             //	}
             //	safety_override_true_number_ = 0;
         }
-        
-        if (checkButtonPressed(joy->buttons, laser_mode_button_) == true) {
-            if (!bRegisteredButtonEvent[laser_mode_button_]) 
+
+        if (checkButtonPressed(joy->buttons, laser_mode_button_) == true)
+        {
+            if (!bRegisteredButtonEvent[laser_mode_button_])
             {
                 bRegisteredButtonEvent[laser_mode_button_] = true;
                 loopBetweenLaserModes();
             }
-        } else {
+        }
+        else
+        {
             bRegisteredButtonEvent[laser_mode_button_] = false;
+        }
+
+        if (checkButtonPressed(joy->buttons, 2 /* circulo 2*/) == true)
+        {
+            if (enable_charge_activated_ == false)
+            {
+                std_srvs::SetBool set_bool_msg;
+                set_bool_msg.request.data = true;
+
+                enable_charge_client_.call(set_bool_msg);
+                enable_charge_activated_ = true;
+            }
+        }
+        else
+        {
+            enable_charge_activated_ = false;
+        }
+
+        if (checkButtonPressed(joy->buttons, 0 /* cuadrado 0 */) == true)
+        {
+            if (enable_charge_deactivated_ == false)
+            {
+                std_srvs::SetBool set_bool_msg;
+                set_bool_msg.request.data = false;
+
+                enable_charge_client_.call(set_bool_msg);
+                enable_charge_deactivated_ = true;
+            }
+        }
+        else
+        {
+            enable_charge_deactivated_ = false;
         }
 
         double speed_step = 0.1;
         double minimum_speed = 0.1;
         double maximum_speed = 1.0;
-        if (checkButtonPressed(joy->buttons, speed_down_button_) == true) {
-            if (!bRegisteredButtonEvent[speed_down_button_]) 
+        if (checkButtonPressed(joy->buttons, speed_down_button_) == true)
+        {
+            if (!bRegisteredButtonEvent[speed_down_button_])
             {
                 current_vel = current_vel - speed_step;
                 if (current_vel < minimum_speed)
-                   current_vel = minimum_speed; 
+                    current_vel = minimum_speed;
                 bRegisteredButtonEvent[speed_down_button_] = true;
                 ROS_INFO("Velocity: %f%%", current_vel * 100.0);
                 char buf[50] = "\0";
@@ -413,11 +470,14 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
                 sprintf(buf, " %d percent", percent);
                 // sc.say(buf);
             }
-        } else {
+        }
+        else
+        {
             bRegisteredButtonEvent[speed_down_button_] = false;
         }
 
-        if (checkButtonPressed(joy->buttons, speed_up_button_) == true) {
+        if (checkButtonPressed(joy->buttons, speed_up_button_) == true)
+        {
             if (!bRegisteredButtonEvent[speed_up_button_])
             {
                 current_vel = current_vel + speed_step;
@@ -430,8 +490,9 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
                 sprintf(buf, " %d percent", percent);
                 // sc.say(buf);
             }
-
-        } else {
+        }
+        else
+        {
             bRegisteredButtonEvent[speed_up_button_] = false;
         }
 
@@ -441,54 +502,66 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
         vel.linear.x = current_vel * l_scale_ * joy->axes[linear_x_];
         vel.linear.y = current_vel * l_scale_ * joy->axes[linear_y_];
         vel.linear.z = current_vel * l_scale_z_ * joy->axes[linear_z_];
-		
-		
+
         // ELEVATOR
         robotnik_msgs::SetElevator elevator_msg_srv;
-		if(use_axis_for_elevator){
-			if (joy->axes[axis_elevator_] > 0.99) {
-				 ROS_INFO_THROTTLE(10, "RB2Pad::padCallback: button %d calling service:%sRAISE", button_stop_elevator_,elevator_service_name_.c_str());
-				
+        if (use_axis_for_elevator)
+        {
+            if (joy->axes[axis_elevator_] > 0.99)
+            {
+                ROS_INFO_THROTTLE(10, "RB2Pad::padCallback: button %d calling service:%sRAISE", button_stop_elevator_, elevator_service_name_.c_str());
 
-				elevator_msg_srv.request.action.action =
-					robotnik_msgs::ElevatorAction::RAISE;
-				set_elevator_client_.call(elevator_msg_srv);
-			}
+                elevator_msg_srv.request.action.action =
+                    robotnik_msgs::ElevatorAction::RAISE;
+                set_elevator_client_.call(elevator_msg_srv);
+            }
 
-			if (joy->axes[axis_elevator_] < -0.99) {
-				 ROS_INFO_THROTTLE(10, "RB2Pad::padCallback: button %d calling service:%s LOWER", button_stop_elevator_,elevator_service_name_.c_str());
+            if (joy->axes[axis_elevator_] < -0.99)
+            {
+                ROS_INFO_THROTTLE(10, "RB2Pad::padCallback: button %d calling service:%s LOWER", button_stop_elevator_, elevator_service_name_.c_str());
 
-				elevator_msg_srv.request.action.action =
-					robotnik_msgs::ElevatorAction::LOWER;
-				set_elevator_client_.call(elevator_msg_srv);
-			}
-		}else{
-			 if (checkButtonPressed(joy->buttons, button_lower_elevator_) == true) {
-				if (!bRegisteredButtonEvent[button_lower_elevator_]){
-					bRegisteredButtonEvent[button_lower_elevator_] = true;
-					elevator_msg_srv.request.action.action =
-					robotnik_msgs::ElevatorAction::LOWER;
-					set_elevator_client_.call(elevator_msg_srv);
-				}
-
-			} else {
-				bRegisteredButtonEvent[button_lower_elevator_] = false;
-			}
-			 if (checkButtonPressed(joy->buttons, button_raise_elevator_) == true) {
-				if (!bRegisteredButtonEvent[button_raise_elevator_]){
-					bRegisteredButtonEvent[button_raise_elevator_] = true;
-					elevator_msg_srv.request.action.action =
-					robotnik_msgs::ElevatorAction::RAISE;
-					set_elevator_client_.call(elevator_msg_srv);
-				}
-
-			} else {
-				bRegisteredButtonEvent[button_raise_elevator_] = false;
-			}
-		}
-    } else {
+                elevator_msg_srv.request.action.action =
+                    robotnik_msgs::ElevatorAction::LOWER;
+                set_elevator_client_.call(elevator_msg_srv);
+            }
+        }
+        else
+        {
+            if (checkButtonPressed(joy->buttons, button_lower_elevator_) == true)
+            {
+                if (!bRegisteredButtonEvent[button_lower_elevator_])
+                {
+                    bRegisteredButtonEvent[button_lower_elevator_] = true;
+                    elevator_msg_srv.request.action.action =
+                        robotnik_msgs::ElevatorAction::LOWER;
+                    set_elevator_client_.call(elevator_msg_srv);
+                }
+            }
+            else
+            {
+                bRegisteredButtonEvent[button_lower_elevator_] = false;
+            }
+            if (checkButtonPressed(joy->buttons, button_raise_elevator_) == true)
+            {
+                if (!bRegisteredButtonEvent[button_raise_elevator_])
+                {
+                    bRegisteredButtonEvent[button_raise_elevator_] = true;
+                    elevator_msg_srv.request.action.action =
+                        robotnik_msgs::ElevatorAction::RAISE;
+                    set_elevator_client_.call(elevator_msg_srv);
+                }
+            }
+            else
+            {
+                bRegisteredButtonEvent[button_raise_elevator_] = false;
+            }
+        }
+    }
+    else
+    {
         // MANUAL RELEASE -> 0
-        if (manual_release_false_number_ < ITERATIONS_CALL_SAFETY_MODULE) {
+        if (manual_release_false_number_ < ITERATIONS_CALL_SAFETY_MODULE)
+        {
             setManualRelease(false);
             // setSafetyOverride(false);
             manual_release_false_number_++;
@@ -506,66 +579,73 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
         vel.linear.z = 0.0;
     }
 
-  static bool initialized_pose = false;
+    static bool initialized_pose = false;
 
-  if (joy->buttons[dead_man_button_] == 1)
-  {
-    if (initialized_pose == false and joy->buttons[button_initialize_pose_] == 1)
+    if (joy->buttons[dead_man_button_] == 1)
     {
-      initialized_pose = true;
-      bool success = false;
-      marker_mapping::InitPoseFromMarker init_pose;
-      if (initialize_pose_client_.exists() == true)
-      {
-        success = initialize_pose_client_.call(init_pose);
-      }
-      else
-      {
-        success = false;
-      }
-      if (success == false) 
-      {
-        ROS_ERROR_STREAM("Pad: Cannot call to initialize pose. Service name: " << initialize_pose_client_.getService());
-      }
-      else if (init_pose.response.ret == false)
-      {
-        ROS_ERROR_STREAM("Pad: Call resulted in error. Service name: " << initialize_pose_client_.getService());
-      }
-      else
-      {
-        ROS_INFO_STREAM("Pad: initialized pose"); 
-      }
+        if (initialized_pose == false and joy->buttons[button_initialize_pose_] == 1)
+        {
+            initialized_pose = true;
+            bool success = false;
+            std_srvs::Trigger init_pose;
+            if (initialize_pose_client_.exists() == true)
+            {
+                success = initialize_pose_client_.call(init_pose);
+            }
+            else
+            {
+                success = false;
+            }
+            if (success == false)
+            {
+                ROS_ERROR_STREAM("Pad: Cannot call to initialize pose. Service name: " << initialize_pose_client_.getService());
+            }
+            else if (init_pose.response.success == false)
+            {
+                ROS_ERROR_STREAM("Pad: Call resulted in error: " << init_pose.response.message << ". Service name: " << initialize_pose_client_.getService());
+            }
+            else
+            {
+                ROS_INFO_STREAM("Pad: initialized pose");
+            }
+        }
     }
-  }
-  else
-  {
-    initialized_pose = false;
-  }
+    else
+    {
+        initialized_pose = false;
+    }
 
-
-
-
-    sus_joy_freq->tick();  // Ticks the reception of joy events
+    sus_joy_freq->tick(); // Ticks the reception of joy events
 
     // Publish only with deadman button pushed for twist use
-    if (checkButtonPressed(joy->buttons, dead_man_button_) == true) {
+    if (checkButtonPressed(joy->buttons, dead_man_button_) == true)
+    {
         send_iterations_after_dead_man = ITERATIONS_AFTER_DEADMAN;
         if (checkButtonPressed(joy->buttons, dead_man_unsafe_button_) ==
                 true and
-            has_unsafe_vel_) {
+            has_unsafe_vel_)
+        {
             unsafe_vel_pub_.publish(vel);
-        } else {
+        }
+        else
+        {
             vel_pub_.publish(vel);
         }
         pub_command_freq->tick();
-    } else {  // send some 0 if deadman is released
-        if (send_iterations_after_dead_man > 0) {
+    }
+    else
+    { // send some 0 if deadman is released
+        if (send_iterations_after_dead_man > 0)
+        {
             send_iterations_after_dead_man--;
             if (checkButtonPressed(joy->buttons, dead_man_unsafe_button_) ==
                     true and
-                has_unsafe_vel_) {
+                has_unsafe_vel_)
+            {
                 unsafe_vel_pub_.publish(vel);
-            } else {
+            }
+            else
+            {
                 vel_pub_.publish(vel);
             }
             pub_command_freq->tick();
@@ -573,7 +653,8 @@ void RB2Pad::padCallback(const sensor_msgs::Joy::ConstPtr &joy) {
     }
 }
 
-int RB2Pad::setManualRelease(bool value) {
+int RB2Pad::setManualRelease(bool value)
+{
     std_srvs::SetBool set_bool_msg;
 
     set_bool_msg.request.data = value;
@@ -582,7 +663,8 @@ int RB2Pad::setManualRelease(bool value) {
     return 0;
 }
 
-int RB2Pad::setSafetyOverride(bool value) {
+int RB2Pad::setSafetyOverride(bool value)
+{
     std_srvs::SetBool set_bool_msg;
 
     set_bool_msg.request.data = value;
@@ -591,14 +673,16 @@ int RB2Pad::setSafetyOverride(bool value) {
     return 0;
 }
 
-int RB2Pad::loopBetweenLaserModes() {
+int RB2Pad::loopBetweenLaserModes()
+{
 
     int next_mode = (current_laser_mode_ + 1) % laser_modes_.size();
-    
+
     robotnik_msgs::SetLaserMode set_laser_msg;
     set_laser_msg.request.mode = laser_modes_[next_mode];
-    
-    if (set_laser_mode_client_.call(set_laser_msg) == false or set_laser_msg.response.ret == false) {
+
+    if (set_laser_mode_client_.call(set_laser_msg) == false or set_laser_msg.response.ret == false)
+    {
         ROS_INFO("RB2Pad: error setting laser mode = %s", set_laser_msg.request.mode.c_str());
         return -1;
     }
@@ -606,13 +690,15 @@ int RB2Pad::loopBetweenLaserModes() {
     return 0;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     ros::init(argc, argv, "rb2_pad");
     RB2Pad rb2_pad;
 
     ros::Rate r(50.0);
 
-    while (ros::ok()) {
+    while (ros::ok())
+    {
         // UPDATING DIAGNOSTICS
         rb2_pad.Update();
         ros::spinOnce();

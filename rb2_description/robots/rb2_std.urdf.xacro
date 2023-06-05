@@ -101,9 +101,11 @@
 	<!-- SENSORS --> 
 	<xacro:sensor_sick_s300 prefix="$(arg prefix)front_laser" parent="$(arg prefix)base_link" prefix_topic="front_laser">
 		<origin xyz="0.355 0.213 0.097" rpy="0 0 0.78539815"/>
+		<!--origin xyz="0.305 0.213 0.097" rpy="0 0 0.811578"/-->
 	</xacro:sensor_sick_s300>
 
     <xacro:sensor_sick_s300 prefix="$(arg prefix)rear_laser" parent="$(arg prefix)base_link" prefix_topic="rear_laser">
+		<!--origin xyz="-0.385 -0.213 0.097" rpy="0 0 -2.29"/-->
 		<origin xyz="-0.355 -0.213 0.097" rpy="0 0 -2.3561945"/>
 	</xacro:sensor_sick_s300>   
     

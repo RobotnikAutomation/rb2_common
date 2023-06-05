@@ -12,7 +12,8 @@ button_speed_down: 1
 button_safety_override: 4
 button_laser_mode: 6
 button_dead_man: 5
-button_dead_man_unsafe: 7
+# button_dead_man_unsafe: 7
+initialize_pose: 7
 button_output_1: 2
 button_output_2: 0
 output_1: 10 
@@ -28,3 +29,4 @@ check_message_timeout: true
 axis_elevator: 10
 elevator_service_name: robotnik_base_control/set_elevator
 laser_modes: ["standard","docking_station","cart","cart_docking_cart","docking_cart"]
+initialize_pose_service_name: marker_mapping/init_pose_from_marker
